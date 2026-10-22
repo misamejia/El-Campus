@@ -54,9 +54,10 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         // Fortify no limita los intentos de alta de cuentas: sin este limitador
-        // un-bot podría registrar usuarios en masa.
+        // un-bot podría registrar usuarios en masa. El límite es de 10 por
+        // minuto porque la universidad usa NAT y comparte IP pública.
         RateLimiter::for('register', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip());
         });
     }
 }

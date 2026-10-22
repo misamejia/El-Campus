@@ -58,8 +58,9 @@ class RegistrationTest extends TestCase
         }
 
         // Datos inválidos a propósito: así la sesión sigue siendo de invitado
-        // y cada intento queda contabilizado por el limitador.
-        for ($intento = 1; $intento <= 5; $intento++) {
+        // y cada intento queda contabilizado por el limitador. El límite es
+        // de 10 registros por minuto y por IP (la universidad usa NAT).
+        for ($intento = 1; $intento <= 10; $intento++) {
             $this->post('/register', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
