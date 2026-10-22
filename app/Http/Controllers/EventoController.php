@@ -6,13 +6,10 @@ use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
 use App\Models\EstadoEvento;
 use App\Models\Evento;
-use App\Models\Medio;
 use App\Models\Organizador;
+use App\Services\Medios\GestorMedios;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EventoController extends Controller
@@ -47,7 +44,7 @@ class EventoController extends Controller
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
-        $datos['imagen_id'] = $this->imagenIdDesdeEntrada($request, $datos['imagen'] ?? null);
+        $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $datos['imagen'] ?? null, 'imagenes/eventos');
         $datos['creado_por'] = $request->user()?->id;
         $datos['actualizado_por'] = $request->user()?->id;
         unset($datos['estado'], $datos['organizador'], $datos['imagen']);
@@ -95,11 +92,11 @@ class EventoController extends Controller
         $medioAnterior = $evento->medio;
 
         if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->guardarMedio($request)->id;
+            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/eventos')->id;
         } elseif ($request->boolean('quitar_imagen')) {
             $datos['imagen_id'] = null;
         } elseif (! empty($datos['imagen'])) {
-            $datos['imagen_id'] = $this->imagenIdDesdeEntrada($request, $datos['imagen']);
+            $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $datos['imagen'], 'imagenes/eventos');
         }
 
         unset($datos['imagen']);
@@ -107,7 +104,7 @@ class EventoController extends Controller
         $evento->update($datos);
 
         if ($medioAnterior !== null && $medioAnterior->id !== $evento->imagen_id) {
-            $this->limpiarMedioSubido($medioAnterior);
+            $this->gestorMedios()->limpiar($medioAnterior);
         }
 
         return redirect()->route('eventos.index')
@@ -171,68 +168,18 @@ class EventoController extends Controller
         $medio = $evento->medio;
 
         $evento->delete();
-        $this->limpiarMedioSubido($medio);
+        $this->gestorMedios()->limpiar($medio);
 
         return redirect()->route('eventos.index')
             ->with('exito', 'Evento eliminado correctamente.');
     }
 
     /**
-     * Guarda la imagen subida en el disco público y registra el medio.
+     * Gestor de imágenes compartidas por el panel.
      */
-    private function guardarMedio(Request $request): Medio
+    private function gestorMedios(): GestorMedios
     {
-        $archivo = $request->file('imagen');
-        $ruta = $archivo->store('imagenes/eventos', 'public');
-
-        return Medio::create([
-            'subido_por' => $request->user()?->id,
-            'disco' => 'public',
-            'ruta' => 'storage/'.$ruta,
-            'tipo_mime' => $archivo->getMimeType() ?: Medio::mimeDe($ruta),
-            'tamano_bytes' => max(1, (int) $archivo->getSize()),
-            'texto_alternativo' => $request->input('imagen_alt'),
-        ]);
-    }
-
-    /**
-     * Devuelve el id de un medio a partir de la entrada del formulario:
-     * un archivo subido o una ruta de texto. Null si no hay imagen.
-     */
-    private function imagenIdDesdeEntrada(Request $request, ?string $ruta): ?int
-    {
-        if ($request->hasFile('imagen')) {
-            return $this->guardarMedio($request)->id;
-        }
-
-        $medio = Medio::desdeRuta($ruta, $request->user()?->id);
-
-        if ($medio !== null && $request->exists('imagen_alt')) {
-            $medio->update(['texto_alternativo' => $request->input('imagen_alt')]);
-        }
-
-        return $medio?->id;
-    }
-
-    /**
-     * Elimina el archivo y el registro de un medio subido por el panel.
-     *
-     * Las imágenes demo que viven en `public/imagenes` (sin prefijo `storage/`)
-     * se conservan, ya que no pertenecen al disco administrable y pueden ser
-     * compartidas. Solo se borra el medio si ningún otro registro lo usa.
-     */
-    private function limpiarMedioSubido(?Medio $medio): void
-    {
-        if ($medio === null || ! str_starts_with($medio->ruta, 'storage/')) {
-            return;
-        }
-
-        if ($medio->noticias()->exists() || $medio->eventos()->exists()) {
-            return;
-        }
-
-        Storage::disk('public')->delete(Str::after($medio->ruta, 'storage/'));
-        $medio->delete();
+        return app(GestorMedios::class);
     }
 
     /**

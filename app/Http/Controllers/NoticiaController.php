@@ -7,15 +7,13 @@ use App\Http\Requests\UpdateNoticiaRequest;
 use App\Models\Autor;
 use App\Models\Categoria;
 use App\Models\EstadoNoticia;
-use App\Models\Medio;
 use App\Models\Noticia;
 use App\Services\Ai\AiManager;
+use App\Services\Medios\GestorMedios;
 use App\Services\Noticias\Relacionadas;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
 
@@ -60,7 +58,7 @@ class NoticiaController extends Controller
         unset($datos['estado']);
 
         if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->guardarMedio($request)->id;
+            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/noticias')->id;
         }
 
         $noticia = Noticia::create($datos);
@@ -116,18 +114,18 @@ class NoticiaController extends Controller
             || $noticia->contenido !== ($datos['contenido'] ?? $noticia->contenido);
 
         if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->guardarMedio($request)->id;
+            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/noticias')->id;
         } elseif ($request->boolean('quitar_imagen')) {
             $datos['imagen_id'] = null;
         } elseif ($medioAnterior !== null && $request->exists('imagen_alt')) {
-            $medioAnterior->update(['texto_alternativo' => $request->input('imagen_alt')]);
+            $this->gestorMedios()->actualizarTextoAlternativo($medioAnterior, $request);
         }
 
         $noticia->update($datos);
         $this->generarIaAlGuardar($noticia, $estadoCodigo, $contenidoCambio);
 
         if ($medioAnterior !== null && $medioAnterior->id !== $noticia->imagen_id) {
-            $this->limpiarMedioSubido($medioAnterior);
+            $this->gestorMedios()->limpiar($medioAnterior);
         }
 
         return redirect()->route('noticias.index')
@@ -164,52 +162,18 @@ class NoticiaController extends Controller
         $medio = $noticia->medio;
 
         $noticia->delete();
-        $this->limpiarMedioSubido($medio);
+        $this->gestorMedios()->limpiar($medio);
 
         return redirect()->route('noticias.index')
             ->with('exito', 'Noticia eliminada correctamente.');
     }
 
     /**
-     * Guarda la imagen subida en el disco público y registra el medio.
-     *
-     * El prefijo `storage/` permite usar `asset()` en las vistas públicas sin
-     * tocar nada: la carpeta `public/storage` es un enlace al disco `public`.
+     * Gestor de imágenes compartidas por el panel.
      */
-    private function guardarMedio(Request $request): Medio
+    private function gestorMedios(): GestorMedios
     {
-        $archivo = $request->file('imagen');
-        $ruta = $archivo->store('imagenes/noticias', 'public');
-
-        return Medio::create([
-            'subido_por' => $request->user()?->id,
-            'disco' => 'public',
-            'ruta' => 'storage/'.$ruta,
-            'tipo_mime' => $archivo->getMimeType() ?: Medio::mimeDe($ruta),
-            'tamano_bytes' => max(1, (int) $archivo->getSize()),
-            'texto_alternativo' => $request->input('imagen_alt'),
-        ]);
-    }
-
-    /**
-     * Elimina el archivo y el registro de un medio subido por el panel.
-     *
-     * Las imágenes demo que viven en `public/imagenes` (sin prefijo `storage/`)
-     * se conservan, ya que no pertenecen al disco administrable y pueden ser
-     * compartidas. Solo se borra el medio si ningún otro registro lo usa.
-     */
-    private function limpiarMedioSubido(?Medio $medio): void
-    {
-        if ($medio === null || ! str_starts_with($medio->ruta, 'storage/')) {
-            return;
-        }
-
-        if ($medio->noticias()->exists() || $medio->eventos()->exists()) {
-            return;
-        }
-
-        Storage::disk('public')->delete(Str::after($medio->ruta, 'storage/'));
-        $medio->delete();
+        return app(GestorMedios::class);
     }
 
     /**
