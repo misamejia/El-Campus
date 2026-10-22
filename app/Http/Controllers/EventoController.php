@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEventoRequest;
+use App\Http\Requests\UpdateEventoRequest;
 use App\Models\EstadoEvento;
 use App\Models\Evento;
 use App\Models\Medio;
@@ -11,7 +13,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EventoController extends Controller
@@ -40,9 +41,9 @@ class EventoController extends Controller
     /**
      * Almacena un evento nuevo.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreEventoRequest $request): RedirectResponse
     {
-        $datos = $this->validar($request, null, $request->hasFile('imagen') || $request->filled('imagen'));
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
@@ -80,11 +81,11 @@ class EventoController extends Controller
     /**
      * Actualiza un evento existente conservando la unicidad del slug.
      */
-    public function update(Request $request, Evento $evento): RedirectResponse
+    public function update(UpdateEventoRequest $request, Evento $evento): RedirectResponse
     {
         $evento->load('medio');
 
-        $datos = $this->validar($request, $evento->id, $request->hasFile('imagen') || $request->filled('imagen'));
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class, $evento->id);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
@@ -254,51 +255,5 @@ class EventoController extends Controller
         }
 
         return Organizador::firstOrCreate(['nombre' => $nombre], ['activo' => true])->id;
-    }
-
-    /**
-     * Reglas de validación para crear y actualizar eventos.
-     */
-    private function validar(Request $request, ?int $idActual = null, bool $tendraImagen = false): array
-    {
-        $reglas = [
-            'titulo' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('eventos', 'slug')->ignore($idActual)],
-            'descripcion' => ['required', 'string'],
-            'lugar' => ['required', 'string', 'max:255'],
-            'fecha_inicio' => ['required', 'date'],
-            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
-            'imagen' => ['nullable'],
-            'imagen_alt' => [$tendraImagen ? 'required' : 'nullable', 'string', 'max:255'],
-            'quitar_imagen' => ['sometimes', 'boolean'],
-            'organizador' => ['nullable', 'string', 'max:255'],
-            'estado' => ['required', Rule::in(['programado', 'realizado', 'cancelado'])],
-        ];
-
-        if ($request->hasFile('imagen')) {
-            $reglas['imagen'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'];
-        } else {
-            $reglas['imagen'] = ['nullable', 'string', 'max:2048'];
-        }
-
-        $mensajes = [
-            'titulo.required' => 'El título del evento es obligatorio.',
-            'titulo.max' => 'El título no puede superar los 255 caracteres.',
-            'slug.unique' => 'Ya existe un evento con ese slug.',
-            'descripcion.required' => 'La descripción del evento es obligatoria.',
-            'lugar.required' => 'El lugar del evento es obligatorio.',
-            'lugar.max' => 'El lugar no puede superar los 255 caracteres.',
-            'fecha_inicio.required' => 'La fecha de inicio es obligatoria.',
-            'fecha_inicio.date' => 'La fecha de inicio debe ser una fecha válida.',
-            'fecha_fin.date' => 'La fecha de fin debe ser una fecha válida.',
-            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
-            'imagen.max' => 'La ruta de la imagen no puede superar los 2048 caracteres.',
-            'imagen_alt.required' => 'El texto alternativo es obligatorio cuando el evento tiene una imagen.',
-            'imagen_alt.max' => 'El texto alternativo no puede superar los 255 caracteres.',
-            'organizador.max' => 'El organizador no puede superar los 255 caracteres.',
-            'estado.in' => 'El estado seleccionado no es válido.',
-        ];
-
-        return $request->validate($reglas, $mensajes);
     }
 }
