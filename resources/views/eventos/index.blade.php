@@ -80,6 +80,10 @@
             <p class="mt-6 text-sm text-neutral-500">
                 Se muestran {{ $eventos->count() }} evento(s).
             </p>
+
+            <div class="mt-4">
+                {{ $eventos->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

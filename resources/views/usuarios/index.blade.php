@@ -97,6 +97,10 @@
             <p class="mt-6 text-sm text-neutral-500">
                 Se muestran {{ $usuarios->count() }} usuario(s).
             </p>
+
+            <div class="mt-4">
+                {{ $usuarios->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

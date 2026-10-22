@@ -21,8 +21,8 @@ class UsuarioController extends Controller
     {
         $usuarios = User::with('rol')
             ->orderBy('name')
-            ->orderBy('id')
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(15);
 
         $totalAdministradores = User::whereHas(
             'rol',

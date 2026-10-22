@@ -79,6 +79,10 @@
             <p class="mt-6 text-sm text-neutral-500">
                 Se muestran {{ $noticias->count() }} noticia(s).
             </p>
+
+            <div class="mt-4">
+                {{ $noticias->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

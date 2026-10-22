@@ -23,8 +23,8 @@ class EventoController extends Controller
     {
         $eventos = Evento::with(['estado', 'organizador', 'medio'])
             ->orderBy('fecha_inicio')
-            ->orderBy('id')
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(15);
 
         return view('eventos.index', compact('eventos'));
     }

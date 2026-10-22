@@ -28,7 +28,7 @@ class NoticiaController extends Controller
         $noticias = Noticia::with(['categoria', 'autor', 'estado', 'medio'])
             ->orderByDesc('fecha_publicacion')
             ->orderByDesc('id')
-            ->get();
+            ->paginate(15);
 
         return view('noticias.index', compact('noticias'));
     }
