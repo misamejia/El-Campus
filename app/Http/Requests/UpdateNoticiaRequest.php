@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Noticia;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -43,7 +42,7 @@ class UpdateNoticiaRequest extends FormRequest
             $reglas['imagen'] = ['nullable', 'string', 'max:2048'];
         }
 
-        $reglas['slug'] = ['nullable', 'string', 'max:255', Rule::unique('noticias', 'slug')->ignore($this->noticia()->id)];
+        $reglas['slug'] = ['nullable', 'string', 'max:255', Rule::unique('noticias', 'slug')->ignore($this->route('noticia')->id)];
 
         return $reglas;
     }
@@ -66,14 +65,6 @@ class UpdateNoticiaRequest extends FormRequest
     private function tendraImagen(): bool
     {
         return $this->hasFile('imagen')
-            || ($this->noticia()->imagen_id !== null && ! $this->boolean('quitar_imagen'));
-    }
-
-    /**
-     * Noticia resuelta por la ruta.
-     */
-    private function noticia(): Noticia
-    {
-        return $this->route('noticia');
+            || ($this->route('noticia')->imagen_id !== null && ! $this->boolean('quitar_imagen'));
     }
 }

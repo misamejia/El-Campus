@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Evento;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +22,7 @@ class UpdateEventoRequest extends FormRequest
     {
         $reglas = [
             'titulo' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('eventos', 'slug')->ignore($this->evento()->id)],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('eventos', 'slug')->ignore($this->route('evento')->id)],
             'descripcion' => ['required', 'string'],
             'lugar' => ['required', 'string', 'max:255'],
             'fecha_inicio' => ['required', 'date'],
@@ -75,13 +74,5 @@ class UpdateEventoRequest extends FormRequest
     private function tendraImagen(): bool
     {
         return $this->hasFile('imagen') || $this->filled('imagen');
-    }
-
-    /**
-     * Evento resuelto por la ruta.
-     */
-    private function evento(): Evento
-    {
-        return $this->route('evento');
     }
 }
