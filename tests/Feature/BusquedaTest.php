@@ -139,7 +139,7 @@ class BusquedaTest extends TestCase
         $noticia = $this->crearNoticia([
             'titulo' => 'El observatorio registra una tormenta tropical',
             'slug' => 'observatorio-tormenta-tropical',
-            'contenido' => "El observatorio meteorológico registró la tormenta de anoche.",
+            'contenido' => 'El observatorio meteorológico registró la tormenta de anoche.',
         ]);
 
         $this->get(route('buscar', ['q' => 'meteorológico']))
@@ -403,7 +403,7 @@ class BusquedaTest extends TestCase
 
     public function test_un_termino_con_caracteres_especiales_no_genera_error(): void
     {
-        $this->get(route('buscar', ['q' => "100% de avance — investigación & ciencia"]))
+        $this->get(route('buscar', ['q' => '100% de avance — investigación & ciencia']))
             ->assertOk();
     }
 

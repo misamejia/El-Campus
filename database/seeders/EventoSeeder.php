@@ -117,11 +117,9 @@ class EventoSeeder extends Seeder
             $this->call(OrganizadorSeeder::class);
         }
 
-        $estado = fn (string $codigo): int =>
-            (int) EstadoEvento::where('codigo', $codigo)->value('id');
+        $estado = fn (string $codigo): int => (int) EstadoEvento::where('codigo', $codigo)->value('id');
 
-        $organizador = fn (?string $nombre): ?int =>
-            $nombre === null ? null : Organizador::firstOrCreate(['nombre' => $nombre], ['activo' => true])->id;
+        $organizador = fn (?string $nombre): ?int => $nombre === null ? null : Organizador::firstOrCreate(['nombre' => $nombre], ['activo' => true])->id;
 
         foreach ($eventos as $d) {
             Evento::updateOrCreate(

@@ -38,10 +38,10 @@ class AiManager implements AiGateway
         $conApiKey = filled(config('prism.providers.gemini.api_key'));
 
         return match (true) {
-            $driver === 'fake' => new FakeGateway(),
-            $driver === 'gemini' => new GeminiGateway(),
-            $conApiKey => new GeminiGateway(),
-            default => new FakeGateway(),
+            $driver === 'fake' => new FakeGateway,
+            $driver === 'gemini' => new GeminiGateway,
+            $conApiKey => new GeminiGateway,
+            default => new FakeGateway,
         };
     }
 

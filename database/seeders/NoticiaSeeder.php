@@ -31,14 +31,11 @@ class NoticiaSeeder extends Seeder
             $this->call(AutorSeeder::class);
         }
 
-        $categoria = fn (string $slug): Categoria =>
-            Categoria::where('slug', $slug)->firstOrFail();
+        $categoria = fn (string $slug): Categoria => Categoria::where('slug', $slug)->firstOrFail();
 
-        $autor = fn (string $slug): Autor =>
-            Autor::where('slug', $slug)->firstOrFail();
+        $autor = fn (string $slug): Autor => Autor::where('slug', $slug)->firstOrFail();
 
-        $estado = fn (string $codigo): int =>
-            (int) EstadoNoticia::where('codigo', $codigo)->value('id');
+        $estado = fn (string $codigo): int => (int) EstadoNoticia::where('codigo', $codigo)->value('id');
 
         $sinImagen = null;
         $noticias = [

@@ -25,11 +25,11 @@ class EnsureUserHasRole
     {
         $usuario = $request->user();
 
-        if (!$usuario) {
+        if (! $usuario) {
             return redirect()->guest(route('login'));
         }
 
-        if (!in_array($usuario->rol?->codigo, $roles, true)) {
+        if (! in_array($usuario->rol?->codigo, $roles, true)) {
             abort(403, 'Acceso no autorizado');
         }
 

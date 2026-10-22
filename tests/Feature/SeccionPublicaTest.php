@@ -56,15 +56,15 @@ class SeccionPublicaTest extends TestCase
         foreach (self::SECCIONES as $seccion) {
             $categoria = $this->crearCategoria(ucfirst($seccion), $seccion);
             $this->crearNoticia($categoria, $autor, [
-                'titulo' => 'Publicada en ' . $seccion,
-                'slug' => 'publicada-en-' . $seccion,
+                'titulo' => 'Publicada en '.$seccion,
+                'slug' => 'publicada-en-'.$seccion,
             ]);
         }
 
         foreach (self::SECCIONES as $seccion) {
-            $this->get(route('seccion.' . $seccion))
+            $this->get(route('seccion.'.$seccion))
                 ->assertOk()
-                ->assertSee('Publicada en ' . $seccion);
+                ->assertSee('Publicada en '.$seccion);
         }
     }
 

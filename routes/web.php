@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AutorController;
 use App\Http\Controllers\BusquedaController;
 use App\Http\Controllers\CategoriaController;
@@ -10,6 +8,7 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PaginaController;
 use App\Http\Controllers\UsuarioController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PaginaController::class, 'inicio'])->name('inicio');
 

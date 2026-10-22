@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Categoria;
 use Database\Seeders\CategoriaSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CategoriaTest extends TestCase
