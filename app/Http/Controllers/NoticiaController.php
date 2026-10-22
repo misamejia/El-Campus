@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreNoticiaRequest;
+use App\Http\Requests\UpdateNoticiaRequest;
 use App\Models\Autor;
 use App\Models\Categoria;
 use App\Models\EstadoNoticia;
@@ -14,7 +16,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -47,9 +48,9 @@ class NoticiaController extends Controller
     /**
      * Almacena una noticia nueva.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreNoticiaRequest $request): RedirectResponse
     {
-        $datos = array_merge($this->validar($request, null, $request->hasFile('imagen')), $this->camposIa($request));
+        $datos = array_merge($request->validated(), $this->camposIa($request));
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Noticia::class);
         $datos['destacada'] = $request->boolean('destacada');
         $estadoCodigo = $datos['estado'];
@@ -97,14 +98,11 @@ class NoticiaController extends Controller
     /**
      * Actualiza una noticia existente.
      */
-    public function update(Request $request, Noticia $noticia): RedirectResponse
+    public function update(UpdateNoticiaRequest $request, Noticia $noticia): RedirectResponse
     {
         $noticia->load('medio');
 
-        $tendraImagen = $request->hasFile('imagen')
-            || ($noticia->imagen_id !== null && ! $request->boolean('quitar_imagen'));
-
-        $datos = array_merge($this->validar($request, $noticia->id, $tendraImagen), $this->camposIa($request));
+        $datos = array_merge($request->validated(), $this->camposIa($request));
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Noticia::class, $noticia->id);
         $datos['destacada'] = $request->boolean('destacada');
         $estadoCodigo = $datos['estado'];
@@ -294,44 +292,5 @@ class NoticiaController extends Controller
         } catch (Throwable $e) {
             report($e);
         }
-    }
-
-    /**
-     * Reglas de validación para crear y actualizar noticias.
-     */
-    private function validar(Request $request, ?int $idActual = null, bool $tendraImagen = false): array
-    {
-        $reglas = [
-            'titulo' => ['required', 'string', 'max:255'],
-            'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
-            'autor_id' => ['required', 'integer', 'exists:autores,id'],
-            'resumen' => ['nullable', 'string', 'max:500'],
-            'contenido' => ['required', 'string'],
-            'imagen' => ['nullable'],
-            'imagen_alt' => [$tendraImagen ? 'required' : 'nullable', 'string', 'max:255'],
-            'quitar_imagen' => ['sometimes', 'boolean'],
-            'fecha_publicacion' => ['nullable', 'date'],
-            'estado' => ['required', Rule::in(['borrador', 'publicada', 'archivada'])],
-            'destacada' => ['sometimes', 'boolean'],
-            'puntos_clave' => ['nullable', 'string'],
-            'etiquetas_ia' => ['nullable', 'string'],
-        ];
-
-        if ($request->hasFile('imagen')) {
-            $reglas['imagen'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'];
-        } else {
-            $reglas['imagen'] = ['nullable', 'string', 'max:2048'];
-        }
-
-        if ($idActual !== null) {
-            $reglas['slug'] = ['nullable', 'string', 'max:255', Rule::unique('noticias', 'slug')->ignore($idActual)];
-        }
-
-        $mensajes = [
-            'imagen_alt.required' => 'El texto alternativo es obligatorio cuando la noticia tiene una imagen.',
-            'imagen_alt.max' => 'El texto alternativo no puede superar los 255 caracteres.',
-        ];
-
-        return $request->validate($reglas, $mensajes);
     }
 }
