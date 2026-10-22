@@ -17,36 +17,53 @@ class PaginaController extends Controller
      */
     public function inicio(): View
     {
-        $publicadas = Noticia::with(['categoria', 'autor', 'estado', 'medio'])
+        $relaciones = ['categoria', 'autor', 'estado', 'medio'];
+
+        $principal = Noticia::with($relaciones)
             ->delEstado('publicada')
+            ->where('destacada', true)
             ->orderByDesc('fecha_publicacion')
             ->orderByDesc('id')
+            ->first()
+            ?? Noticia::with($relaciones)
+                ->delEstado('publicada')
+                ->orderByDesc('fecha_publicacion')
+                ->orderByDesc('id')
+                ->first();
+
+        $secundarias = Noticia::with($relaciones)
+            ->delEstado('publicada')
+            ->when($principal, fn ($consulta) => $consulta->whereKeyNot($principal->getKey()))
+            ->orderByDesc('fecha_publicacion')
+            ->orderByDesc('id')
+            ->limit(3)
             ->get();
 
-        $principal = $publicadas->firstWhere('destacada', true)
-            ?? $publicadas->first();
-
-        $secundarias = $publicadas
-            ->where('id', '!==', $principal?->id)
-            ->take(3)
+        $ocupados = collect([$principal?->getKey()])
+            ->merge($secundarias->modelKeys())
+            ->filter()
             ->values();
 
-        $ocupados = collect([$principal?->id, ...$secundarias->pluck('id')])->filter();
-
-        $ultimas = $publicadas
-            ->whereNotIn('id', $ocupados)
-            ->take(4)
-            ->values();
+        $ultimas = Noticia::with($relaciones)
+            ->delEstado('publicada')
+            ->when($ocupados->isNotEmpty(), fn ($consulta) => $consulta->whereKeyNot($ocupados->all()))
+            ->orderByDesc('fecha_publicacion')
+            ->orderByDesc('id')
+            ->limit(4)
+            ->get();
 
         $porCategorias = Categoria::where('activa', true)
             ->orderBy('orden')
             ->orderBy('id')
             ->get()
-            ->map(function (Categoria $categoria) use ($publicadas) {
-                $noticias = $publicadas
+            ->map(function (Categoria $categoria) use ($relaciones) {
+                $noticias = Noticia::with($relaciones)
+                    ->delEstado('publicada')
                     ->where('categoria_id', $categoria->id)
-                    ->take(2)
-                    ->values();
+                    ->orderByDesc('fecha_publicacion')
+                    ->orderByDesc('id')
+                    ->limit(2)
+                    ->get();
 
                 return $noticias->isEmpty() ? null : [
                     'categoria' => $categoria,
