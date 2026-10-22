@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
+use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -38,7 +38,7 @@ class CategoriaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $datos = $this->validar($request);
-        $datos['slug'] = $this->slugUnico($request->input('slug'), $request->input('nombre'));
+        $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Categoria::class);
         $datos['activa'] = $request->boolean('activa');
 
         Categoria::create($datos);
@@ -76,7 +76,7 @@ class CategoriaController extends Controller
         $categoria = Categoria::findOrFail($categoria);
 
         $datos = $this->validar($request, $categoria->id);
-        $datos['slug'] = $this->slugUnico($request->input('slug'), $request->input('nombre'), $categoria->id);
+        $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Categoria::class, $categoria->id);
         $datos['activa'] = $request->boolean('activa');
 
         $categoria->update($datos);
@@ -149,22 +149,5 @@ class CategoriaController extends Controller
         ];
 
         return $request->validate($reglas);
-    }
-
-    /**
-     * Genera un slug único a partir del slug propuesto o del nombre.
-     */
-    private function slugUnico(?string $slugPropuesto, string $nombre, ?int $ignorarId = null): string
-    {
-        $base = Str::slug($slugPropuesto ?: $nombre);
-        $slug = $base;
-        $sufijo = 2;
-
-        while (Categoria::where('slug', $slug)->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))->exists()) {
-            $slug = $base.'-'.$sufijo;
-            $sufijo++;
-        }
-
-        return $slug;
     }
 }

@@ -9,6 +9,7 @@ use App\Models\Medio;
 use App\Models\Noticia;
 use App\Services\Ai\AiManager;
 use App\Services\Noticias\Relacionadas;
+use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -49,7 +50,7 @@ class NoticiaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $datos = array_merge($this->validar($request, null, $request->hasFile('imagen')), $this->camposIa($request));
-        $datos['slug'] = $this->slugUnico($request->input('titulo'));
+        $datos['slug'] = SlugUnico::generar($request->input('titulo'), Noticia::class);
         $datos['destacada'] = $request->boolean('destacada');
         $estadoCodigo = $datos['estado'];
         $datos['estado_id'] = $this->estadoId($estadoCodigo);
@@ -104,7 +105,7 @@ class NoticiaController extends Controller
             || ($noticia->imagen_id !== null && ! $request->boolean('quitar_imagen'));
 
         $datos = array_merge($this->validar($request, $noticia->id, $tendraImagen), $this->camposIa($request));
-        $datos['slug'] = $this->slugUnico($request->input('titulo'), $noticia->id);
+        $datos['slug'] = SlugUnico::generar($request->input('titulo'), Noticia::class, $noticia->id);
         $datos['destacada'] = $request->boolean('destacada');
         $estadoCodigo = $datos['estado'];
         $datos['estado_id'] = $this->estadoId($estadoCodigo);
@@ -332,24 +333,5 @@ class NoticiaController extends Controller
         ];
 
         return $request->validate($reglas, $mensajes);
-    }
-
-    /**
-     * Genera un slug único a partir del título de la noticia.
-     *
-     * El slug también está protegido por el índice único de la tabla.
-     */
-    private function slugUnico(string $titulo, ?int $ignorarId = null): string
-    {
-        $base = Str::slug($titulo);
-        $slug = $base;
-        $sufijo = 2;
-
-        while (Noticia::where('slug', $slug)->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))->exists()) {
-            $slug = $base.'-'.$sufijo;
-            $sufijo++;
-        }
-
-        return $slug;
     }
 }

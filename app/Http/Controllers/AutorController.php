@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Autor;
+use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -37,7 +37,7 @@ class AutorController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $datos = $this->validar($request);
-        $datos['slug'] = $this->slugUnico($request->input('slug'), $request->input('nombre'));
+        $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Autor::class);
         $datos['activo'] = $request->boolean('activo');
 
         Autor::create($datos);
@@ -74,7 +74,7 @@ class AutorController extends Controller
         $autor = Autor::findOrFail($autor);
 
         $datos = $this->validar($request, $autor->id);
-        $datos['slug'] = $this->slugUnico($request->input('slug'), $request->input('nombre'), $autor->id);
+        $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Autor::class, $autor->id);
         $datos['activo'] = $request->boolean('activo');
 
         $autor->update($datos);
@@ -120,22 +120,5 @@ class AutorController extends Controller
         ];
 
         return $request->validate($reglas);
-    }
-
-    /**
-     * Genera un slug único a partir del slug propuesto o del nombre.
-     */
-    private function slugUnico(?string $slugPropuesto, string $nombre, ?int $ignorarId = null): string
-    {
-        $base = Str::slug($slugPropuesto ?: $nombre);
-        $slug = $base;
-        $sufijo = 2;
-
-        while (Autor::where('slug', $slug)->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))->exists()) {
-            $slug = $base.'-'.$sufijo;
-            $sufijo++;
-        }
-
-        return $slug;
     }
 }

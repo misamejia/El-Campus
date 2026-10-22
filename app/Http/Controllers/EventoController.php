@@ -6,6 +6,7 @@ use App\Models\EstadoEvento;
 use App\Models\Evento;
 use App\Models\Medio;
 use App\Models\Organizador;
+use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -42,7 +43,7 @@ class EventoController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $datos = $this->validar($request, null, $request->hasFile('imagen') || $request->filled('imagen'));
-        $datos['slug'] = $this->slugUnico($request->input('titulo'));
+        $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
         $datos['imagen_id'] = $this->imagenIdDesdeEntrada($request, $datos['imagen'] ?? null);
@@ -84,7 +85,7 @@ class EventoController extends Controller
         $evento = Evento::with('medio')->findOrFail($evento);
 
         $datos = $this->validar($request, $evento->id, $request->hasFile('imagen') || $request->filled('imagen'));
-        $datos['slug'] = $this->slugUnico($request->input('titulo'), $evento->id);
+        $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class, $evento->id);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
         $datos['actualizado_por'] = $request->user()?->id;
@@ -299,24 +300,5 @@ class EventoController extends Controller
         ];
 
         return $request->validate($reglas, $mensajes);
-    }
-
-    /**
-     * Genera un slug único a partir del título del evento.
-     *
-     * El slug también está protegido por el índice único de la tabla.
-     */
-    private function slugUnico(string $titulo, ?int $ignorarId = null): string
-    {
-        $base = Str::slug($titulo);
-        $slug = $base;
-        $sufijo = 2;
-
-        while (Evento::where('slug', $slug)->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))->exists()) {
-            $slug = $base.'-'.$sufijo;
-            $sufijo++;
-        }
-
-        return $slug;
     }
 }
