@@ -20,6 +20,10 @@ class Relacionadas
         if ($vector !== null) {
             $parecidas = Noticia::publicadas()
                 ->where('id', '!=', $noticia->id)
+                ->whereNotNull('embedding')
+                ->orderByDesc('fecha_publicacion')
+                ->orderByDesc('id')
+                ->limit(100)
                 ->get()
                 ->filter(fn (Noticia $n) => is_array($n->embedding) && $n->embedding !== [])
                 ->map(fn (Noticia $n) => ['noticia' => $n, 'score' => Similitud::coseno($vector, $n->embedding)])
