@@ -8,14 +8,13 @@ use App\Models\Autor;
 use App\Models\Categoria;
 use App\Models\EstadoNoticia;
 use App\Models\Noticia;
-use App\Services\Ai\AiManager;
 use App\Services\Medios\GestorMedios;
+use App\Services\Noticias\GeneradorIa;
 use App\Services\Noticias\Relacionadas;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Throwable;
 
 class NoticiaController extends Controller
 {
@@ -62,7 +61,7 @@ class NoticiaController extends Controller
         }
 
         $noticia = Noticia::create($datos);
-        $this->generarIaAlGuardar($noticia, $estadoCodigo, contenidoCambio: true);
+        $this->generadorIa()->generar($noticia, $estadoCodigo, contenidoCambio: true);
 
         return redirect()->route('noticias.index')
             ->with('exito', 'Noticia creada correctamente.');
@@ -122,7 +121,7 @@ class NoticiaController extends Controller
         }
 
         $noticia->update($datos);
-        $this->generarIaAlGuardar($noticia, $estadoCodigo, $contenidoCambio);
+        $this->generadorIa()->generar($noticia, $estadoCodigo, $contenidoCambio);
 
         if ($medioAnterior !== null && $medioAnterior->id !== $noticia->imagen_id) {
             $this->gestorMedios()->limpiar($medioAnterior);
@@ -224,37 +223,10 @@ class NoticiaController extends Controller
     }
 
     /**
-     * Genera con IA el embedding, el resumen y las etiquetas de una noticia.
-     *
-     * Nunca interrumpe el guardado: cualquier fallo del proveedor se registra
-     * y la noticia se conserva tal y como la escribió la persona.
+     * Generador de los campos de IA de la noticia.
      */
-    private function generarIaAlGuardar(Noticia $noticia, string $estadoCodigo, bool $contenidoCambio): void
+    private function generadorIa(): GeneradorIa
     {
-        try {
-            $ai = app(AiManager::class);
-
-            if ($contenidoCambio || ! is_array($noticia->embedding) || $noticia->embedding === []) {
-                $texto = trim($noticia->titulo."\n".($noticia->resumen ?? '')."\n".$noticia->contenido);
-                $noticia->embedding = $ai->embedding($texto);
-                $noticia->embedding_actualizado_en = now();
-            }
-
-            if ($estadoCodigo === 'publicada' && blank($noticia->resumen)) {
-                $resultado = $ai->resumir($noticia->titulo, $noticia->contenido);
-                $noticia->resumen = $resultado['resumen'];
-                if (empty($noticia->puntos_clave)) {
-                    $noticia->puntos_clave = $resultado['puntos_clave'];
-                }
-            }
-
-            if (empty($noticia->etiquetas_ia)) {
-                $noticia->etiquetas_ia = $ai->etiquetas($noticia->titulo, $noticia->contenido);
-            }
-
-            $noticia->saveQuietly();
-        } catch (Throwable $e) {
-            report($e);
-        }
+        return app(GeneradorIa::class);
     }
 }
