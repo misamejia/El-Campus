@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Autor extends Model
 {
@@ -33,7 +34,7 @@ class Autor extends Model
     /**
      * Un autor (persona o equipo editorial) puede tener muchas noticias.
      */
-    public function noticias()
+    public function noticias(): HasMany
     {
         return $this->hasMany(Noticia::class, 'autor_id');
     }
