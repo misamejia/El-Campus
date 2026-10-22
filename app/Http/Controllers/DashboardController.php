@@ -21,17 +21,29 @@ class DashboardController extends Controller
     public function index(): View
     {
         $totalNoticias = Noticia::count();
-        $publicadas = Noticia::delEstado('publicada')->count();
-        $borradores = Noticia::delEstado('borrador')->count();
-        $archivadas = Noticia::delEstado('archivada')->count();
+        $conteoNoticias = Noticia::query()
+            ->join('estados_noticia', 'estados_noticia.id', '=', 'noticias.estado_id')
+            ->selectRaw('estados_noticia.codigo as codigo, count(*) as total')
+            ->groupBy('estados_noticia.codigo')
+            ->pluck('total', 'codigo');
+
+        $publicadas = (int) ($conteoNoticias['publicada'] ?? 0);
+        $borradores = (int) ($conteoNoticias['borrador'] ?? 0);
+        $archivadas = (int) ($conteoNoticias['archivada'] ?? 0);
 
         $totalAutores = Autor::count();
         $totalCategorias = Categoria::count();
 
         $totalEventos = Evento::count();
-        $programados = Evento::delEstado('programado')->count();
-        $realizados = Evento::delEstado('realizado')->count();
-        $cancelados = Evento::delEstado('cancelado')->count();
+        $conteoEventos = Evento::query()
+            ->join('estados_evento', 'estados_evento.id', '=', 'eventos.estado_id')
+            ->selectRaw('estados_evento.codigo as codigo, count(*) as total')
+            ->groupBy('estados_evento.codigo')
+            ->pluck('total', 'codigo');
+
+        $programados = (int) ($conteoEventos['programado'] ?? 0);
+        $realizados = (int) ($conteoEventos['realizado'] ?? 0);
+        $cancelados = (int) ($conteoEventos['cancelado'] ?? 0);
 
         $noticiasRecientes = Noticia::with(['categoria', 'autor', 'estado', 'medio'])
             ->orderByDesc('fecha_publicacion')
