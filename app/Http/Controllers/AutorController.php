@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAutorRequest;
+use App\Http\Requests\UpdateAutorRequest;
 use App\Models\Autor;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AutorController extends Controller
@@ -34,9 +34,9 @@ class AutorController extends Controller
     /**
      * Almacena un autor nuevo.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreAutorRequest $request): RedirectResponse
     {
-        $datos = $this->validar($request);
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Autor::class);
         $datos['activo'] = $request->boolean('activo');
 
@@ -67,9 +67,9 @@ class AutorController extends Controller
     /**
      * Actualiza un autor existente conservando la unicidad del slug.
      */
-    public function update(Request $request, Autor $autor): RedirectResponse
+    public function update(UpdateAutorRequest $request, Autor $autor): RedirectResponse
     {
-        $datos = $this->validar($request, $autor->id);
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Autor::class, $autor->id);
         $datos['activo'] = $request->boolean('activo');
 
@@ -96,23 +96,5 @@ class AutorController extends Controller
 
         return redirect()->route('autores.index')
             ->with('exito', 'Autor eliminado correctamente.');
-    }
-
-    /**
-     * Reglas de validación para crear y actualizar autores.
-     *
-     * @param  array<string>  $reglasAdicionales
-     */
-    private function validar(Request $request, ?int $idActual = null): array
-    {
-        $reglas = [
-            'nombre' => ['required', 'string', 'max:150'],
-            'slug' => ['nullable', 'string', 'max:160', Rule::unique('autores', 'slug')->ignore($idActual)],
-            'descripcion' => ['nullable', 'string', 'max:500'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'activo' => ['sometimes', 'boolean'],
-        ];
-
-        return $request->validate($reglas);
     }
 }

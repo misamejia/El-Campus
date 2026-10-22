@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
 use App\Models\Categoria;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CategoriaController extends Controller
@@ -35,9 +35,9 @@ class CategoriaController extends Controller
     /**
      * Almacena una categoría nueva.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCategoriaRequest $request): RedirectResponse
     {
-        $datos = $this->validar($request);
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Categoria::class);
         $datos['activa'] = $request->boolean('activa');
 
@@ -68,9 +68,9 @@ class CategoriaController extends Controller
     /**
      * Actualiza una categoría existente conservando la unicidad del slug.
      */
-    public function update(Request $request, Categoria $categoria): RedirectResponse
+    public function update(UpdateCategoriaRequest $request, Categoria $categoria): RedirectResponse
     {
-        $datos = $this->validar($request, $categoria->id);
+        $datos = $request->validated();
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Categoria::class, $categoria->id);
         $datos['activa'] = $request->boolean('activa');
 
@@ -126,21 +126,5 @@ class CategoriaController extends Controller
             'categoria' => $categoria,
             'noticias' => $noticias,
         ]);
-    }
-
-    /**
-     * Reglas de validación para crear y actualizar categorías.
-     */
-    private function validar(Request $request, ?int $idActual = null): array
-    {
-        $reglas = [
-            'nombre' => ['required', 'string', 'max:100'],
-            'slug' => ['nullable', 'string', 'max:120', Rule::unique('categorias', 'slug')->ignore($idActual)],
-            'descripcion' => ['nullable', 'string', 'max:500'],
-            'activa' => ['sometimes', 'boolean'],
-            'orden' => ['nullable', 'integer', 'min:0'],
-        ];
-
-        return $request->validate($reglas);
     }
 }
