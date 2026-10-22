@@ -9,6 +9,14 @@ use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PaginaController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\RegisteredUserController;
+
+// Fortify registra el alta de cuentas sin ningún límite de intentos. Se
+// redefine la misma ruta (mismo método, URI y nombre) para añadir el
+// limitador 'register': 5 registros por minuto y por IP.
+Route::post('/register', [RegisteredUserController::class, 'store'])
+    ->middleware(['guest:'.config('fortify.guard'), 'throttle:register'])
+    ->name('register.store');
 
 Route::get('/', [PaginaController::class, 'inicio'])->name('inicio');
 

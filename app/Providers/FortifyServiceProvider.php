@@ -52,5 +52,11 @@ class FortifyServiceProvider extends ServiceProvider
                 ($credentialId ?: $request->session()->getId()).'|'.$request->ip()
             );
         });
+
+        // Fortify no limita los intentos de alta de cuentas: sin este limitador
+        // un-bot podría registrar usuarios en masa.
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
     }
 }

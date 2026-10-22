@@ -50,4 +50,29 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_el_registro_limita_los_intentos_por_ip(): void
+    {
+        if (! Features::enabled(Features::registration())) {
+            $this->markTestSkipped('Registration support is not enabled.');
+        }
+
+        // Datos inválidos a propósito: así la sesión sigue siendo de invitado
+        // y cada intento queda contabilizado por el limitador.
+        for ($intento = 1; $intento <= 5; $intento++) {
+            $this->post('/register', [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => 'corta',
+                'password_confirmation' => 'corta',
+            ])->assertStatus(302);
+        }
+
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'corta',
+            'password_confirmation' => 'corta',
+        ])->assertStatus(429);
+    }
 }
