@@ -4,14 +4,17 @@ namespace Tests\Feature;
 
 use App\Models\Autor;
 use App\Models\Categoria;
+use App\Models\Evento;
 use App\Models\Medio;
 use App\Models\Noticia;
+use App\Models\User;
 use App\Services\Medios\GestorMedios;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Tests\TestCase;
 
 class GestorMediosTest extends TestCase
@@ -107,6 +110,58 @@ class GestorMediosTest extends TestCase
 
         $this->assertDatabaseMissing('medios', ['id' => $medio->id]);
         $this->assertFalse(Storage::disk('public')->exists('imagenes/noticias/demo.jpg'));
+    }
+
+    public function test_si_falla_al_crear_la_noticia_se_borra_el_archivo_y_el_medio(): void
+    {
+        $this->actingAs(User::factory()->admin()->create(['email_verified_at' => now()]));
+        config(['app.debug' => false]);
+
+        $categoria = Categoria::create(['nombre' => 'Universidad', 'slug' => 'universidad']);
+        $autor = Autor::create(['nombre' => 'Redacción El Campus', 'slug' => 'redaccion-el-campus']);
+
+        Noticia::creating(function () {
+            throw new RuntimeException('Fallo simulado al guardar la noticia.');
+        });
+
+        $this->post(route('noticias.store'), [
+            'titulo' => 'Noticia que no se guarda',
+            'categoria_id' => $categoria->id,
+            'autor_id' => $autor->id,
+            'contenido' => 'Contenido de la noticia que falla.',
+            'estado' => 'publicada',
+            'imagen' => UploadedFile::fake()->create('portada.jpg', 10, 'image/jpeg'),
+            'imagen_alt' => 'Portada de la noticia',
+        ])->assertStatus(500);
+
+        $this->assertDatabaseCount('medios', 0);
+        $this->assertDatabaseCount('noticias', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
+    public function test_si_falla_al_crear_el_evento_se_borra_el_archivo_y_el_medio(): void
+    {
+        $this->actingAs(User::factory()->admin()->create(['email_verified_at' => now()]));
+        config(['app.debug' => false]);
+
+        Evento::creating(function () {
+            throw new RuntimeException('Fallo simulado al guardar el evento.');
+        });
+
+        $this->post(route('eventos.store'), [
+            'titulo' => 'Evento que no se guarda',
+            'descripcion' => 'Descripción del evento que falla.',
+            'lugar' => 'Auditorio principal',
+            'fecha_inicio' => now()->addDay()->toDateString(),
+            'organizador' => 'Vicerrectoría',
+            'estado' => 'programado',
+            'imagen' => UploadedFile::fake()->create('evento.jpg', 10, 'image/jpeg'),
+            'imagen_alt' => 'Afiche del evento',
+        ])->assertStatus(500);
+
+        $this->assertDatabaseCount('medios', 0);
+        $this->assertDatabaseCount('eventos', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
     private function medioSubido(): Medio

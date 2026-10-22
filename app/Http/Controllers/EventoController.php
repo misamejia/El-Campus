@@ -10,7 +10,9 @@ use App\Models\Organizador;
 use App\Services\Medios\GestorMedios;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Throwable;
 
 class EventoController extends Controller
 {
@@ -44,12 +46,30 @@ class EventoController extends Controller
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class);
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
-        $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $datos['imagen'] ?? null, 'imagenes/eventos');
         $datos['creado_por'] = $request->user()?->id;
         $datos['actualizado_por'] = $request->user()?->id;
-        unset($datos['estado'], $datos['organizador'], $datos['imagen']);
 
-        Evento::create($datos);
+        $rutaImagen = $datos['imagen'] ?? null;
+        unset($datos['estado'], $datos['organizador'], $datos['imagen'], $datos['imagen_alt'], $datos['quitar_imagen']);
+
+        $medio = null;
+
+        try {
+            DB::transaction(function () use ($request, &$datos, $rutaImagen, &$medio) {
+                if ($request->hasFile('imagen')) {
+                    $medio = $this->gestorMedios()->guardar($request, 'imagenes/eventos');
+                    $datos['imagen_id'] = $medio->id;
+                } else {
+                    $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $rutaImagen, 'imagenes/eventos');
+                }
+
+                Evento::create($datos);
+            });
+        } catch (Throwable $e) {
+            $this->gestorMedios()->limpiar($medio);
+
+            throw $e;
+        }
 
         return redirect()->route('eventos.index')
             ->with('exito', 'Evento creado correctamente.');
@@ -87,21 +107,33 @@ class EventoController extends Controller
         $datos['estado_id'] = $this->estadoId($datos['estado']);
         $datos['organizador_id'] = $this->organizadorId($datos['organizador'] ?? null);
         $datos['actualizado_por'] = $request->user()?->id;
-        unset($datos['estado'], $datos['organizador']);
 
         $medioAnterior = $evento->medio;
+        $rutaImagen = $datos['imagen'] ?? null;
+        unset($datos['estado'], $datos['organizador'], $datos['imagen'], $datos['imagen_alt'], $datos['quitar_imagen']);
 
-        if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/eventos')->id;
-        } elseif ($request->boolean('quitar_imagen')) {
-            $datos['imagen_id'] = null;
-        } elseif (! empty($datos['imagen'])) {
-            $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $datos['imagen'], 'imagenes/eventos');
+        $medioNuevo = null;
+
+        try {
+            DB::transaction(function () use ($request, $evento, &$datos, $rutaImagen, &$medioNuevo) {
+                if ($request->hasFile('imagen')) {
+                    $medioNuevo = $this->gestorMedios()->guardar($request, 'imagenes/eventos');
+                    $datos['imagen_id'] = $medioNuevo->id;
+                } elseif ($request->boolean('quitar_imagen')) {
+                    $datos['imagen_id'] = null;
+                } elseif (! empty($rutaImagen)) {
+                    $datos['imagen_id'] = $this->gestorMedios()->desdeEntrada($request, $rutaImagen, 'imagenes/eventos');
+                }
+
+                $evento->update($datos);
+            });
+        } catch (Throwable $e) {
+            if ($medioNuevo !== null && $medioNuevo->id !== $medioAnterior?->id) {
+                $this->gestorMedios()->limpiar($medioNuevo);
+            }
+
+            throw $e;
         }
-
-        unset($datos['imagen']);
-
-        $evento->update($datos);
 
         if ($medioAnterior !== null && $medioAnterior->id !== $evento->imagen_id) {
             $this->gestorMedios()->limpiar($medioAnterior);

@@ -83,7 +83,9 @@ class GestorMedios
             return;
         }
 
-        Storage::disk('public')->delete(Str::after($medio->ruta, 'storage/'));
+        $ruta = $medio->ruta;
         $medio->delete();
+
+        Storage::disk('public')->delete(Str::after($ruta, 'storage/'));
     }
 }

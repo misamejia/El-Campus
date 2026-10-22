@@ -14,7 +14,9 @@ use App\Services\Noticias\Relacionadas;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Throwable;
 
 class NoticiaController extends Controller
 {
@@ -54,13 +56,25 @@ class NoticiaController extends Controller
         $datos['estado_id'] = $this->estadoId($estadoCodigo);
         $datos['creado_por'] = $request->user()?->id;
         $datos['actualizado_por'] = $request->user()?->id;
-        unset($datos['estado']);
+        unset($datos['estado'], $datos['imagen'], $datos['imagen_alt'], $datos['quitar_imagen']);
 
-        if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/noticias')->id;
+        $medio = null;
+
+        try {
+            $noticia = DB::transaction(function () use ($request, &$datos, &$medio) {
+                if ($request->hasFile('imagen')) {
+                    $medio = $this->gestorMedios()->guardar($request, 'imagenes/noticias');
+                    $datos['imagen_id'] = $medio->id;
+                }
+
+                return Noticia::create($datos);
+            });
+        } catch (Throwable $e) {
+            $this->gestorMedios()->limpiar($medio);
+
+            throw $e;
         }
 
-        $noticia = Noticia::create($datos);
         $this->generadorIa()->generar($noticia, $estadoCodigo, contenidoCambio: true);
 
         return redirect()->route('noticias.index')
@@ -105,22 +119,36 @@ class NoticiaController extends Controller
         $estadoCodigo = $datos['estado'];
         $datos['estado_id'] = $this->estadoId($estadoCodigo);
         $datos['actualizado_por'] = $request->user()?->id;
-        unset($datos['estado']);
+        unset($datos['estado'], $datos['imagen'], $datos['imagen_alt'], $datos['quitar_imagen']);
 
         $medioAnterior = $noticia->medio;
 
         $contenidoCambio = $noticia->titulo !== ($datos['titulo'] ?? $noticia->titulo)
             || $noticia->contenido !== ($datos['contenido'] ?? $noticia->contenido);
 
-        if ($request->hasFile('imagen')) {
-            $datos['imagen_id'] = $this->gestorMedios()->guardar($request, 'imagenes/noticias')->id;
-        } elseif ($request->boolean('quitar_imagen')) {
-            $datos['imagen_id'] = null;
-        } elseif ($medioAnterior !== null && $request->exists('imagen_alt')) {
-            $this->gestorMedios()->actualizarTextoAlternativo($medioAnterior, $request);
+        $medioNuevo = null;
+
+        try {
+            DB::transaction(function () use ($request, $noticia, &$datos, $medioAnterior, &$medioNuevo) {
+                if ($request->hasFile('imagen')) {
+                    $medioNuevo = $this->gestorMedios()->guardar($request, 'imagenes/noticias');
+                    $datos['imagen_id'] = $medioNuevo->id;
+                } elseif ($request->boolean('quitar_imagen')) {
+                    $datos['imagen_id'] = null;
+                } elseif ($medioAnterior !== null && $request->exists('imagen_alt')) {
+                    $this->gestorMedios()->actualizarTextoAlternativo($medioAnterior, $request);
+                }
+
+                $noticia->update($datos);
+            });
+        } catch (Throwable $e) {
+            if ($medioNuevo !== null && $medioNuevo->id !== $medioAnterior?->id) {
+                $this->gestorMedios()->limpiar($medioNuevo);
+            }
+
+            throw $e;
         }
 
-        $noticia->update($datos);
         $this->generadorIa()->generar($noticia, $estadoCodigo, $contenidoCambio);
 
         if ($medioAnterior !== null && $medioAnterior->id !== $noticia->imagen_id) {
