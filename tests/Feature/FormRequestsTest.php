@@ -165,6 +165,56 @@ class FormRequestsTest extends TestCase
         ])->assertSessionHasErrors('email');
     }
 
+    public function test_la_noticia_rechaza_archivo_no_imagen_supera_tamano_o_svg(): void
+    {
+        $this->actingAs($this->administrador());
+
+        $this->post(route('noticias.store'), $this->datosNoticia([
+            'imagen' => UploadedFile::fake()->create('documento.pdf', 10, 'application/pdf'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+
+        $this->post(route('noticias.store'), $this->datosNoticia([
+            'imagen' => UploadedFile::fake()->create('grande.jpg', 3000, 'image/jpeg'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+
+        $this->post(route('noticias.store'), $this->datosNoticia([
+            'imagen' => UploadedFile::fake()->create('icono.svg', 5, 'image/svg+xml'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+    }
+
+    public function test_el_evento_rechaza_archivo_no_imagen_supera_tamano_o_svg(): void
+    {
+        $this->actingAs($this->administrador());
+
+        $this->post(route('eventos.store'), $this->datosEvento([
+            'imagen' => UploadedFile::fake()->create('documento.pdf', 10, 'application/pdf'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+
+        $this->post(route('eventos.store'), $this->datosEvento([
+            'imagen' => UploadedFile::fake()->create('grande.jpg', 3000, 'image/jpeg'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+
+        $this->post(route('eventos.store'), $this->datosEvento([
+            'imagen' => UploadedFile::fake()->create('icono.svg', 5, 'image/svg+xml'),
+            'imagen_alt' => 'Texto alternativo',
+        ]))->assertSessionHasErrors('imagen');
+    }
+
+    public function test_en_eventos_una_ruta_de_texto_en_imagen_se_acepta_con_imagen_alt(): void
+    {
+        $this->actingAs($this->administrador());
+
+        $this->post(route('eventos.store'), $this->datosEvento([
+            'imagen' => '/imagenes/eventos/demo.jpg',
+            'imagen_alt' => 'Imagen de demostracion',
+        ]))->assertSessionHasNoErrors();
+    }
+
     private function administrador(): User
     {
         return User::factory()->admin()->create(['email_verified_at' => now()]);
