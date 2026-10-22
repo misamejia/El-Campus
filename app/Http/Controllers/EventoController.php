@@ -60,9 +60,9 @@ class EventoController extends Controller
     /**
      * Muestra un evento individual.
      */
-    public function show(string $evento): View
+    public function show(Evento $evento): View
     {
-        $evento = Evento::with(['estado', 'organizador', 'medio'])->findOrFail($evento);
+        $evento->load(['estado', 'organizador', 'medio']);
 
         return view('eventos.show', compact('evento'));
     }
@@ -70,9 +70,9 @@ class EventoController extends Controller
     /**
      * Muestra el formulario para editar un evento.
      */
-    public function edit(string $evento): View
+    public function edit(Evento $evento): View
     {
-        $evento = Evento::with('medio')->findOrFail($evento);
+        $evento->load('medio');
 
         return view('eventos.edit', compact('evento'));
     }
@@ -80,9 +80,9 @@ class EventoController extends Controller
     /**
      * Actualiza un evento existente conservando la unicidad del slug.
      */
-    public function update(Request $request, string $evento): RedirectResponse
+    public function update(Request $request, Evento $evento): RedirectResponse
     {
-        $evento = Evento::with('medio')->findOrFail($evento);
+        $evento->load('medio');
 
         $datos = $this->validar($request, $evento->id, $request->hasFile('imagen') || $request->filled('imagen'));
         $datos['slug'] = SlugUnico::generar($request->input('titulo'), Evento::class, $evento->id);
@@ -164,9 +164,9 @@ class EventoController extends Controller
     /**
      * Elimina un evento.
      */
-    public function destroy(string $evento): RedirectResponse
+    public function destroy(Evento $evento): RedirectResponse
     {
-        $evento = Evento::with('medio')->findOrFail($evento);
+        $evento->load('medio');
         $medio = $evento->medio;
 
         $evento->delete();

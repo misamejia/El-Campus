@@ -50,10 +50,9 @@ class CategoriaController extends Controller
     /**
      * Muestra una categoría y las noticias asociadas.
      */
-    public function show(string $categoria): View
+    public function show(Categoria $categoria): View
     {
-        $categoria = Categoria::with(['noticias.autor', 'noticias.estado', 'noticias.medio'])
-            ->findOrFail($categoria);
+        $categoria->load(['noticias.autor', 'noticias.estado', 'noticias.medio']);
 
         return view('categorias.show', compact('categoria'));
     }
@@ -61,20 +60,16 @@ class CategoriaController extends Controller
     /**
      * Muestra el formulario para editar una categoría.
      */
-    public function edit(string $categoria): View
+    public function edit(Categoria $categoria): View
     {
-        $categoria = Categoria::findOrFail($categoria);
-
         return view('categorias.edit', compact('categoria'));
     }
 
     /**
      * Actualiza una categoría existente conservando la unicidad del slug.
      */
-    public function update(Request $request, string $categoria): RedirectResponse
+    public function update(Request $request, Categoria $categoria): RedirectResponse
     {
-        $categoria = Categoria::findOrFail($categoria);
-
         $datos = $this->validar($request, $categoria->id);
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Categoria::class, $categoria->id);
         $datos['activa'] = $request->boolean('activa');
@@ -91,10 +86,8 @@ class CategoriaController extends Controller
      * La clave foránea protege la base de datos; aquí además se ofrece un
      * mensaje claro para el usuario.
      */
-    public function destroy(string $categoria): RedirectResponse
+    public function destroy(Categoria $categoria): RedirectResponse
     {
-        $categoria = Categoria::findOrFail($categoria);
-
         if ($categoria->noticias()->exists()) {
             return redirect()->route('categorias.index')
                 ->with('error', 'No se puede eliminar esta categoría porque tiene noticias asociadas.');

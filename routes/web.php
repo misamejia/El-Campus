@@ -70,7 +70,9 @@ Route::middleware([
 
     // Solo administrador: gestión de autores, categorías y de roles de usuarios.
     Route::middleware('role:administrador')->group(function () {
-        Route::resource('autores', AutorController::class);
+        // El parámetro por defecto sería {autore}; se fija {autor} para mantener
+        // el singular en español, igual que {noticia}, {evento} y {categoria}.
+        Route::resource('autores', AutorController::class)->parameters(['autores' => 'autor']);
         Route::resource('categorias', CategoriaController::class);
 
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');

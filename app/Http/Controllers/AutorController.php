@@ -49,9 +49,9 @@ class AutorController extends Controller
     /**
      * Muestra un autor y las noticias asociadas.
      */
-    public function show(string $autor): View
+    public function show(Autor $autor): View
     {
-        $autor = Autor::with('noticias.categoria')->findOrFail($autor);
+        $autor->load('noticias.categoria');
 
         return view('autores.show', compact('autor'));
     }
@@ -59,20 +59,16 @@ class AutorController extends Controller
     /**
      * Muestra el formulario para editar un autor.
      */
-    public function edit(string $autor): View
+    public function edit(Autor $autor): View
     {
-        $autor = Autor::findOrFail($autor);
-
         return view('autores.edit', compact('autor'));
     }
 
     /**
      * Actualiza un autor existente conservando la unicidad del slug.
      */
-    public function update(Request $request, string $autor): RedirectResponse
+    public function update(Request $request, Autor $autor): RedirectResponse
     {
-        $autor = Autor::findOrFail($autor);
-
         $datos = $this->validar($request, $autor->id);
         $datos['slug'] = SlugUnico::generar($request->input('slug') ?: $request->input('nombre'), Autor::class, $autor->id);
         $datos['activo'] = $request->boolean('activo');
@@ -89,10 +85,8 @@ class AutorController extends Controller
      * La clave foránea con restrictOnDelete protege la base de datos; aquí
      * además se ofrece un mensaje claro para el usuario.
      */
-    public function destroy(string $autor): RedirectResponse
+    public function destroy(Autor $autor): RedirectResponse
     {
-        $autor = Autor::findOrFail($autor);
-
         if ($autor->noticias()->exists()) {
             return redirect()->route('autores.index')
                 ->with('error', 'No se puede eliminar este autor porque tiene noticias asociadas.');

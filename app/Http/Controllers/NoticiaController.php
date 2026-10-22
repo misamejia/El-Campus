@@ -72,9 +72,9 @@ class NoticiaController extends Controller
     /**
      * Muestra una noticia individual.
      */
-    public function show(string $noticia): View
+    public function show(Noticia $noticia): View
     {
-        $noticia = Noticia::with(['categoria', 'autor', 'estado', 'medio'])->findOrFail($noticia);
+        $noticia->load(['categoria', 'autor', 'estado', 'medio']);
 
         return view('noticias.show', compact('noticia'));
     }
@@ -82,9 +82,9 @@ class NoticiaController extends Controller
     /**
      * Muestra el formulario para editar una noticia.
      */
-    public function edit(string $noticia): View
+    public function edit(Noticia $noticia): View
     {
-        $noticia = Noticia::with('medio')->findOrFail($noticia);
+        $noticia->load('medio');
         $categorias = Categoria::where('activa', true)->orderBy('nombre')->get();
         $autores = Autor::where('activo', true)
             ->orWhere('id', $noticia->autor_id)
@@ -97,9 +97,9 @@ class NoticiaController extends Controller
     /**
      * Actualiza una noticia existente.
      */
-    public function update(Request $request, string $noticia): RedirectResponse
+    public function update(Request $request, Noticia $noticia): RedirectResponse
     {
-        $noticia = Noticia::with('medio')->findOrFail($noticia);
+        $noticia->load('medio');
 
         $tendraImagen = $request->hasFile('imagen')
             || ($noticia->imagen_id !== null && ! $request->boolean('quitar_imagen'));
@@ -160,9 +160,9 @@ class NoticiaController extends Controller
     /**
      * Elimina una noticia.
      */
-    public function destroy(string $noticia): RedirectResponse
+    public function destroy(Noticia $noticia): RedirectResponse
     {
-        $noticia = Noticia::with('medio')->findOrFail($noticia);
+        $noticia->load('medio');
         $medio = $noticia->medio;
 
         $noticia->delete();
