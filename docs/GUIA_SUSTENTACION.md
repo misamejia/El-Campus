@@ -53,7 +53,7 @@ El principio rector de la arquitectura es **una tabla funcional → un modelo �
 | noticias | `Noticia` | `NoticiaController` | CRUD `/noticias` (admin/editor) + `/noticia/{slug}` público |
 | eventos | `Evento` | `EventoController` | CRUD `/admin/eventos` (admin/editor) + `/eventos` y `/evento/{slug}` públicos |
 
-Los métodos de cada entidad viven en su controlador: `NoticiaController@publica`, `EventoController@publicas`/`publico`, `CategoriaController@seccion`. `PaginaController` solo atiende páginas transversales y estáticas (`inicio`, `sobre-el-campus`, `perfil`); `BusquedaController` (buscador) y `DashboardController` (panel) son controladores de propósito específico. Las tablas internas de Laravel (sessions, cache, jobs, tokens, etc.) no son entidades del dominio, por lo que no llevan modelo ni controlador de aplicación.
+Los métodos de cada entidad viven en un controlador dedicado: `NoticiaPublicController@publica`, `EventoPublicController@publicas`/`publico`, `SeccionController@seccion`. `PaginaController` solo atiende páginas transversales y estáticas (`inicio`, `sobre-el-campus`, `perfil`); `BusquedaController` (buscador) y `DashboardController` (panel) son controladores de propósito específico. Las tablas internas de Laravel (sessions, cache, jobs, tokens, etc.) no son entidades del dominio, por lo que no llevan modelo ni controlador de aplicación.
 
 ## 6. Laravel
 
@@ -87,7 +87,7 @@ Flujo: **ruta → controlador → modelo → base de datos → vista**.
 - **Update**: `GET /noticias/{id}/edit` (formulario) y `PUT /noticias/{id}` (`update` valida y guarda).
 - **Delete**: `DELETE /noticias/{id}` (`destroy`, con confirmación y CSRF).
 
-Las reglas se validan **en el servidor**: título obligatorio, slug único, categoría y autor existentes, estado permitido y fecha válida. El mismo patrón se repite en los demás CRUD (autores, categorías y eventos), cada uno en su propio controlador; las páginas públicas de esas entidades también las atiende su controlador (p. ej. `CategoriaController@seccion` para las secciones editoriales).
+Las reglas se validan **en el servidor**: título obligatorio, slug único, categoría y autor existentes, estado permitido y fecha válida. El mismo patrón se repite en los demás CRUD (autores, categorías y eventos), cada uno en su propio controlador; las páginas públicas de esas entidades las atiende un controlador separado (p. ej. `SeccionController@seccion` para las secciones editoriales).
 
 ## 9. Relaciones
 

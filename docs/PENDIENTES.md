@@ -4,17 +4,22 @@ Deuda técnica y riesgos identificados durante la refactorización, deliberadame
 del alcance de los cambios ya aplicados. No requieren acción inmediata, pero conviene
 resolverlos antes de exponer el portal a internet.
 
-## 1. Proxy inverso y `throttle:register`
+## 1. Proxy inverso y `throttle:register` — pendiente permanente
+
+**Decisión:** el proyecto se ejecuta en un único equipo local, sin proxy inverso, así que
+**no se implementa**. Queda documentado por si algún día se despliega detrás de Nginx,
+Cloudflare o un balanceador.
 
 **Riesgo:** el limitador del alta de cuentas (`FortifyServiceProvider`, 10/min) usa la IP
-del cliente. `bootstrap/app.php` no llama a `trustProxies()`, así que detrás de Nginx,
-Cloudflare o un balanceador todos los clientes comparten la IP del proxy: el límite se
-vuelve global y puede bloquear registros legítimos.
+del cliente. `bootstrap/app.php` no llama a `trustProxies()`, así que detrás de un proxy
+todos los clientes comparten la IP del proxy: el límite se vuelve global y puede bloquear
+registros legítimos.
 
 **Dónde:** `bootstrap/app.php` (no hay `->trustProxies(...)`), `FortifyServiceProvider::boot`.
 
-**Arreglo:** configurar `$middleware->trustProxies(at: [...])` con las IPs/CIDR reales del
-proxy (nunca `*` en producción) y verificar que el proxy reescribe `X-Forwarded-For`.
+**Arreglo (solo si se despliega con proxy):** configurar `$middleware->trustProxies(at: [...])`
+con las IPs/CIDR reales del proxy (nunca `*` en producción) y verificar que el proxy
+reescribe `X-Forwarded-For`.
 
 ## 2. `POST /register` definido dos veces
 
@@ -68,3 +73,21 @@ copia deja la otra desincronizada.
 
 **Arreglo:** extraer reglas compartidas a una clase de reglas (`App\Rules\RutaImagenPublica`)
 y los mensajes a un trait o a un `messages()` común, sin cambiar el comportamiento.
+
+## 6. Historial de estados en SQLite
+
+**Situación:** las filas de `historial_estados_noticia` y `historial_estados_evento` las
+crean triggers definidos en MySQL (`2026_09_12_235000_create_triggers_and_views.php`). En
+SQLite los triggers no existen, por lo que `tests/Feature/HistorialEstadosShowTest.php`
+inserta las filas directamente con los modelos para poder verificar el render.
+
+**Consecuencia:** la suite no cubre el trigger de base de datos; solo cubre que las vistas
+muestran y ocultan el historial y que no hay N+1. Si se migra de motor, hay que revisar los
+triggers.
+
+## 7. Documentación de controladores públicos
+
+**Situación:** `README.md` y `docs/GUIA_SUSTENTACION.md` ya apuntan a
+`NoticiaPublicController`, `EventoPublicController` y `SeccionController`. Si se añaden
+nuevas páginas públicas, hay que mantener esa separación y no volver a los controladores del
+panel.

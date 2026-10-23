@@ -115,7 +115,7 @@ Cada **tabla funcional** de la aplicación tiene su propio **modelo Eloquent** y
 | noticias | `Noticia` | `NoticiaController` | CRUD `/noticias` + página pública `/noticia/{slug}` |
 | eventos | `Evento` | `EventoController` | CRUD `/admin/eventos` + portada `/eventos` y detalle `/evento/{slug}` |
 
-Los métodos públicos de cada entidad viven en el controlador de esa entidad: `NoticiaController@publica`, `EventoController@publicas`/`publico` y `CategoriaController@seccion`. `PaginaController` se limita a páginas transversales y estáticas (`inicio`, `sobre-el-campus`, `perfil`), `BusquedaController` es el buscador transversal y `DashboardController` el panel.
+Los métodos públicos de cada entidad viven en un controlador dedicado: `NoticiaPublicController@publica`, `EventoPublicController@publicas`/`publico` y `SeccionController@seccion`. `PaginaController` se limita a páginas transversales y estáticas (`inicio`, `sobre-el-campus`, `perfil`), `BusquedaController` es el buscador transversal y `DashboardController` el panel.
 
 Las tablas internas del framework (migraciones, password_reset_tokens, sessions, cache, cache_locks, jobs, job_batches, personal_access_tokens, passkeys) no representan entidades del dominio y no reciben modelo ni controlador de aplicación.
 
