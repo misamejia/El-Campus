@@ -5,8 +5,11 @@ use App\Http\Controllers\BusquedaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\EventoPublicController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\NoticiaPublicController;
 use App\Http\Controllers\PaginaController;
+use App\Http\Controllers\SeccionController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -31,25 +34,28 @@ Route::get('/buscar', [BusquedaController::class, 'index'])->name('buscar');
 // aceptan slugs reales generados por Str::slug, y las URLs basura terminan
 // en 404 sin llegar a consultar la base de datos.
 // El método de la entidad vive en NoticiaController (una tabla, un controlador).
-Route::get('/noticia/{slug}', [NoticiaController::class, 'publica'])
+// El slug se restringe a min\u00fasculas, n\u00fameros y guiones: las rutas solo
+// aceptan slugs reales generados por Str::slug, y las URLs basura terminan
+// en 404 sin llegar a consultar la base de datos.
+Route::get('/noticia/{slug}', [NoticiaPublicController::class, 'publica'])
     ->name('noticia.publica')
     ->where('slug', '[a-z0-9-]+');
 
-Route::get('/eventos', [EventoController::class, 'publicas'])->name('eventos.publica');
+Route::get('/eventos', [EventoPublicController::class, 'publicas'])->name('eventos.publica');
 
-Route::get('/evento/{slug}', [EventoController::class, 'publico'])
+Route::get('/evento/{slug}', [EventoPublicController::class, 'publico'])
     ->name('evento.publica')
     ->where('slug', '[a-z0-9-]+');
 
-// Secciones editoriales del periódico: cada ruta estática muestra las
-// noticias publicadas de su categoría mediante una única vista reutilizable,
-// atendida por CategoriaController (el controlador de la tabla categories).
-// El slug de la categoría se inyecta con defaults() porque el path es fijo.
-Route::get('/universidad', [CategoriaController::class, 'seccion'])->name('seccion.universidad')->defaults('seccion', 'universidad');
-Route::get('/investigacion', [CategoriaController::class, 'seccion'])->name('seccion.investigacion')->defaults('seccion', 'investigacion');
-Route::get('/cultura', [CategoriaController::class, 'seccion'])->name('seccion.cultura')->defaults('seccion', 'cultura');
-Route::get('/deportes', [CategoriaController::class, 'seccion'])->name('seccion.deportes')->defaults('seccion', 'deportes');
-Route::get('/opinion', [CategoriaController::class, 'seccion'])->name('seccion.opinion')->defaults('seccion', 'opinion');
+// Secciones editoriales del peri\u00f3dico: cada ruta est\u00e1tica muestra las
+// noticias publicadas de su categor\u00eda mediante una \u00fanica vista reutilizable,
+// atendida por SeccionController. Las rutas se registran en bucle desde una
+// lista fija para mantener los nombres seccion.* y los defaults.
+foreach (['universidad', 'investigacion', 'cultura', 'deportes', 'opinion'] as $seccion) {
+    Route::get("/{$seccion}", [SeccionController::class, 'seccion'])
+        ->name("seccion.{$seccion}")
+        ->defaults('seccion', $seccion);
+}
 
 Route::get('/sobre-el-campus', [PaginaController::class, 'sobreElCampus'])->name('sobre-el-campus');
 

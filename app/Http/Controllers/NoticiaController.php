@@ -10,7 +10,6 @@ use App\Models\EstadoNoticia;
 use App\Models\Noticia;
 use App\Services\Medios\GestorMedios;
 use App\Services\Noticias\GeneradorIa;
-use App\Services\Noticias\Relacionadas;
 use App\Support\SlugUnico;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -168,16 +167,7 @@ class NoticiaController extends Controller
      */
     public function publica(string $slug): View
     {
-        $noticia = Noticia::with(['categoria', 'autor', 'estado', 'medio'])
-            ->where('slug', $slug)
-            ->delEstado('publicada')
-            ->firstOrFail();
-
-        return view('public.noticia', [
-            'seccion' => $noticia->categoria?->slug,
-            'noticia' => $noticia,
-            'relacionadas' => app(Relacionadas::class)->para($noticia, (int) config('ai.relacionadas', 3)),
-        ]);
+        abort(404);
     }
 
     /**

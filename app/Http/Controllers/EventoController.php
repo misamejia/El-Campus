@@ -152,23 +152,7 @@ class EventoController extends Controller
      */
     public function publicas(): View
     {
-        $proximos = Evento::with(['estado', 'organizador', 'medio'])
-            ->delEstado('programado')
-            ->orderBy('fecha_inicio')
-            ->orderBy('id')
-            ->get();
-
-        $realizados = Evento::with(['estado', 'organizador', 'medio'])
-            ->delEstado('realizado')
-            ->orderByDesc('fecha_inicio')
-            ->orderByDesc('id')
-            ->get();
-
-        return view('public.eventos', [
-            'seccion' => 'eventos',
-            'proximos' => $proximos,
-            'realizados' => $realizados,
-        ]);
+        abort(404);
     }
 
     /**
@@ -180,15 +164,7 @@ class EventoController extends Controller
      */
     public function publico(string $slug): View
     {
-        $evento = Evento::with(['estado', 'organizador', 'medio'])
-            ->where('slug', $slug)
-            ->publicos()
-            ->firstOrFail();
-
-        return view('public.evento', [
-            'seccion' => 'eventos',
-            'evento' => $evento,
-        ]);
+        abort(404);
     }
 
     /**
