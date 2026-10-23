@@ -54,8 +54,10 @@
                                     <td class="px-4 py-4 text-center">
                                         @if ($usuario->isAdministrador())
                                             <span class="inline-block rounded bg-oro-100 px-2 py-0.5 font-sans text-xs font-semibold text-oro-900">Administrador</span>
-                                        @else
+                                        @elseif ($usuario->isEditor())
                                             <span class="inline-block rounded bg-verde-50 px-2 py-0.5 font-sans text-xs font-semibold text-verde-800">Editor</span>
+                                        @else
+                                            <span class="inline-block rounded bg-neutral-100 px-2 py-0.5 font-sans text-xs font-semibold text-neutral-700">Lector</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4">
@@ -64,19 +66,17 @@
                                                 <span class="font-sans text-xs text-neutral-400">No puedes cambiar tu propio rol</span>
                                             @elseif ($usuario->isAdministrador() && $totalAdministradores === 1)
                                                 <span class="font-sans text-xs text-neutral-400">Último administrador</span>
-                                            @elseif ($usuario->isAdministrador())
-                                                <form method="POST" action="{{ route('usuarios.rol.actualizar', $usuario) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <input type="hidden" name="role" value="{{ \App\Models\User::ROLE_EDITOR }}">
-                                                    <button type="submit" class="font-semibold text-oro-700 hover:text-oro-500">Cambiar a Editor</button>
-                                                </form>
                                             @else
-                                                <form method="POST" action="{{ route('usuarios.rol.actualizar', $usuario) }}">
+                                                <form method="POST" action="{{ route('usuarios.rol.actualizar', $usuario) }}" class="flex items-center justify-end gap-2">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <input type="hidden" name="role" value="{{ \App\Models\User::ROLE_ADMIN }}">
-                                                    <button type="submit" class="font-semibold text-verde-700 hover:text-verde-500">Cambiar a Administrador</button>
+                                                    <label for="rol-{{ $usuario->id }}" class="sr-only">Rol de {{ $usuario->name }}</label>
+                                                    <select id="rol-{{ $usuario->id }}" name="role" class="rounded-md border-neutral-300 font-sans text-sm text-neutral-700 shadow-sm focus:border-verde-500 focus:ring-verde-500">
+                                                        <option value="{{ \App\Models\User::ROLE_ADMIN }}" @selected($usuario->isAdministrador())>Administrador</option>
+                                                        <option value="{{ \App\Models\User::ROLE_EDITOR }}" @selected($usuario->isEditor())>Editor</option>
+                                                        <option value="{{ \App\Models\User::ROLE_LECTOR }}" @selected($usuario->isLector())>Lector</option>
+                                                    </select>
+                                                    <button type="submit" class="font-semibold text-verde-700 hover:text-verde-500">Actualizar</button>
                                                 </form>
                                             @endif
                                         </div>
