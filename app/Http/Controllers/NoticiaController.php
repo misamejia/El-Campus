@@ -85,7 +85,17 @@ class NoticiaController extends Controller
      */
     public function show(Noticia $noticia): View
     {
-        $noticia->load(['categoria', 'autor', 'estado', 'medio']);
+        $noticia->load([
+            'categoria',
+            'autor',
+            'estado',
+            'medio',
+            'creadoPor',
+            'actualizadoPor',
+            'historialEstados.estadoAnterior',
+            'historialEstados.estadoNuevo',
+            'historialEstados.usuario',
+        ]);
 
         return view('noticias.show', compact('noticia'));
     }

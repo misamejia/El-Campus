@@ -80,7 +80,16 @@ class EventoController extends Controller
      */
     public function show(Evento $evento): View
     {
-        $evento->load(['estado', 'organizador', 'medio']);
+        $evento->load([
+            'estado',
+            'organizador',
+            'medio',
+            'creadoPor',
+            'actualizadoPor',
+            'historialEstados.estadoAnterior',
+            'historialEstados.estadoNuevo',
+            'historialEstados.usuario',
+        ]);
 
         return view('eventos.show', compact('evento'));
     }

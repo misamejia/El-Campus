@@ -57,6 +57,34 @@
                 <div class="mt-6 space-y-4 font-serif text-base leading-relaxed text-neutral-800">
                     {!! nl2br(e($evento->descripcion)) !!}
                 </div>
+
+                @if ($evento->historialEstados->isNotEmpty())
+                    <section class="mt-10 border-t border-neutral-200 pt-6">
+                        <h2 class="font-display text-lg font-bold text-verde-950">Historial de estados</h2>
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                                <thead class="bg-neutral-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-semibold text-neutral-600">Estado anterior</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-neutral-600">Estado nuevo</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-neutral-600">Usuario</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-neutral-600">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100 bg-white">
+                                    @foreach ($evento->historialEstados as $historial)
+                                        <tr>
+                                            <td class="px-3 py-2 text-neutral-700">{{ $historial->estadoAnterior?->nombre ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-neutral-700">{{ $historial->estadoNuevo?->nombre ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-neutral-700">{{ $historial->usuario?->name ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-neutral-700">{{ $historial->cambiado_en?->format('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                @endif
             </article>
 
             <div class="mt-6 flex items-center gap-3">
