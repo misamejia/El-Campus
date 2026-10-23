@@ -17,6 +17,7 @@ class BusquedaController extends Controller
      * y eventos en estado "programado" o "realizado". El término se normaliza
      * (trim y espacios colapsados) y se usa con LIKE mediante el Query Builder,
      * por lo que los parámetros siempre van vinculados, nunca interpolados.
+     * Los comodines % y _ se escapan para evitar búsquedas amplias accidentales.
      * No se ejecuta ninguna consulta si el término está vacío.
      */
     public function index(Request $request): View
@@ -32,14 +33,18 @@ class BusquedaController extends Controller
         $eventos = new Collection;
 
         if ($termino !== '') {
+            $terminoEscapado = addcslashes($termino, '\\%_');
+            $like = '%'.$terminoEscapado.'%';
+            $escape = '\\';
+
             $noticias = Noticia::with(['categoria', 'autor', 'estado', 'medio'])
                 ->delEstado('publicada')
-                ->where(function ($consulta) use ($termino) {
-                    $consulta->where('titulo', 'like', "%{$termino}%")
-                        ->orWhere('resumen', 'like', "%{$termino}%")
-                        ->orWhere('contenido', 'like', "%{$termino}%")
-                        ->orWhereHas('categoria', fn ($categoria) => $categoria->where('nombre', 'like', "%{$termino}%"))
-                        ->orWhereHas('autor', fn ($autor) => $autor->where('nombre', 'like', "%{$termino}%"));
+                ->where(function ($consulta) use ($like, $escape) {
+                    $consulta->whereRaw('titulo LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereRaw('resumen LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereRaw('contenido LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereHas('categoria', fn ($categoria) => $categoria->whereRaw('nombre LIKE ? ESCAPE ?', [$like, $escape]))
+                        ->orWhereHas('autor', fn ($autor) => $autor->whereRaw('nombre LIKE ? ESCAPE ?', [$like, $escape]));
                 })
                 ->orderByDesc('fecha_publicacion')
                 ->orderByDesc('id')
@@ -48,11 +53,11 @@ class BusquedaController extends Controller
 
             $eventos = Evento::with(['estado', 'organizador', 'medio'])
                 ->publicos()
-                ->where(function ($consulta) use ($termino) {
-                    $consulta->where('titulo', 'like', "%{$termino}%")
-                        ->orWhere('descripcion', 'like', "%{$termino}%")
-                        ->orWhere('lugar', 'like', "%{$termino}%")
-                        ->orWhereHas('organizador', fn ($organizador) => $organizador->where('nombre', 'like', "%{$termino}%"));
+                ->where(function ($consulta) use ($like, $escape) {
+                    $consulta->whereRaw('titulo LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereRaw('descripcion LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereRaw('lugar LIKE ? ESCAPE ?', [$like, $escape])
+                        ->orWhereHas('organizador', fn ($organizador) => $organizador->whereRaw('nombre LIKE ? ESCAPE ?', [$like, $escape]));
                 })
                 ->orderByRaw("CASE WHEN (SELECT codigo FROM estados_evento WHERE estados_evento.id = eventos.estado_id) = 'programado' THEN 0 ELSE 1 END")
                 ->orderBy('fecha_inicio')
