@@ -111,6 +111,24 @@ class RelacionadasLimiteTest extends TestCase
         $this->assertSame([], $relacionadas->pluck('id')->intersect($antiguas->pluck('id'))->all());
     }
 
+    public function test_las_relacionadas_llegan_sin_contenido_y_con_las_relaciones_cargadas(): void
+    {
+        $vector = [1.0, 0.0, 0.0, 0.0];
+
+        $principal = $this->crearNoticia('Noticia principal', $this->conEmbedding($vector));
+
+        for ($i = 1; $i <= 3; $i++) {
+            $this->crearNoticia(sprintf('Candidata %03d', $i), $this->conEmbedding($vector));
+        }
+
+        $relacionada = app(Relacionadas::class)->para($principal, 1)->first();
+
+        $this->assertArrayNotHasKey('contenido', $relacionada->getAttributes());
+        $this->assertTrue($relacionada->relationLoaded('categoria'));
+        $this->assertTrue($relacionada->relationLoaded('autor'));
+        $this->assertTrue($relacionada->relationLoaded('medio'));
+    }
+
     public function test_la_candidata_actual_nunca_se_incluye_aunque_sea_la_mas_similar(): void
     {
         $vector = [1.0, 0.0, 0.0, 0.0];
