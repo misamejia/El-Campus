@@ -185,6 +185,32 @@ class GestorMediosTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
+    public function test_limpiar_ignora_las_rutas_con_traversal_sin_lanzar_ni_borrar(): void
+    {
+        Storage::disk('public')->put('imagenes/noticias/legitima.jpg', 'contenido');
+
+        $malicioso = Medio::create([
+            'disco' => 'public',
+            'ruta' => 'storage/../../x',
+            'tipo_mime' => 'image/jpeg',
+            'tamano_bytes' => 10,
+        ]);
+
+        $fueraDeImagenes = Medio::create([
+            'disco' => 'public',
+            'ruta' => 'storage/otros/legitima.jpg',
+            'tipo_mime' => 'image/jpeg',
+            'tamano_bytes' => 10,
+        ]);
+
+        $this->gestor->limpiar($malicioso);
+        $this->gestor->limpiar($fueraDeImagenes);
+
+        $this->assertDatabaseHas('medios', ['id' => $malicioso->id]);
+        $this->assertDatabaseHas('medios', ['id' => $fueraDeImagenes->id]);
+        $this->assertTrue(Storage::disk('public')->exists('imagenes/noticias/legitima.jpg'));
+    }
+
     private function medioSubido(): Medio
     {
         Storage::disk('public')->put('imagenes/noticias/demo.jpg', 'contenido');

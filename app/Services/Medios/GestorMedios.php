@@ -90,9 +90,14 @@ class GestorMedios
             return;
         }
 
-        $ruta = $medio->ruta;
+        $ruta = str_replace('\\', '/', Str::after($medio->ruta, 'storage/'));
+
+        if (str_contains($ruta, '..') || ! str_starts_with($ruta, 'imagenes/')) {
+            return;
+        }
+
         $medio->delete();
 
-        Storage::disk('public')->delete(Str::after($ruta, 'storage/'));
+        Storage::disk('public')->delete($ruta);
     }
 }
