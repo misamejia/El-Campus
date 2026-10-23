@@ -91,3 +91,28 @@ triggers.
 `NoticiaPublicController`, `EventoPublicController` y `SeccionController`. Si se añaden
 nuevas páginas públicas, hay que mantener esa separación y no volver a los controladores del
 panel.
+
+## 8. Alta de editores sin pasar por el registro público
+
+**Situación:** el administrador solo puede promover cuentas que ya se registraron y
+verificaron su correo. Para dar acceso a un editor hay que pedirle que se registre (nace
+lector), verifique su correo y después promoverlo desde `/usuarios`.
+
+**Mejora propuesta:** formulario de alta directa para el administrador que cree la cuenta
+con una contraseña temporal y obligue a cambiarla en el primer inicio de sesión (o envíe
+una invitación por correo). Debe seguir sin permitir que el propio administrador se cambie
+el rol ni que quede el sistema sin administradores.
+
+## 9. Autenticación en dos pasos y API de Jetstream desactivadas
+
+**Situación:** `config/jetstream.php` mantiene comentadas `Features::api()` y
+`Features::twoFactorAuthentication()`; `accountDeletion` sí está activa. Por eso la suite
+omite 7 tests: 3 de API (`ApiTokenPermissionsTest`, `CreateApiTokenTest`,
+`DeleteApiTokenTest`), 3 de 2FA (`TwoFactorAuthenticationSettingsTest`) y 1 de
+`RegistrationTest` que solo aplica cuando el registro está desactivado.
+
+**Riesgo si se activan:** hoy `GET /api/user` solo exige `auth:sanctum`, así que cualquier
+usuario con token podría consultarlo; al habilitar tokens hay que impedir que un lector cree
+tokens y revisar qué expone la API. Al activar 2FA, probar el flujo completo con un lector.
+
+**Dónde:** `config/jetstream.php`, `config/fortify.php`, `routes/api.php`, tests omitidos.

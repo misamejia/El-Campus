@@ -40,6 +40,19 @@ No hay analizador estático configurado; Pint y la suite son la verificación m�
 - Los seeders usan imágenes demo reales de `public/imagenes/*.svg`; no sustituirlas por rutas
   inexistentes.
 
+## Roles y permisos
+
+- Tres roles: `administrador` (id 1), `editor` (id 2) y `lector` (id 3). El alta pública
+  (`POST /register`) crea **siempre** un lector; `role_id` no es asignable masivamente.
+- `/dashboard`, noticias, eventos, autores y categorías exigen `role:administrador,editor`;
+  autores, categorías y usuarios exigen `role:administrador`. `/perfil` y la configuración
+  de la cuenta están disponibles para cualquier usuario autenticado.
+- Solo el administrador cambia roles (`PATCH /usuarios/{usuario}/rol`, desplegable en
+  `/usuarios`). No puede cambiarse su propio rol, no puede dejar el sistema sin
+  administradores y no puede dar un rol de edición a una cuenta sin correo verificado.
+- Al añadir rutas del panel, colócalas dentro del grupo de rol correspondiente y cubre el
+  caso del lector en `tests/Feature/RolLectorTest.php`.
+
 ## Seguridad (invariantes)
 
 - Toda ruta de escritura exige `role:administrador,editor` o `role:administrador`; cubierto
