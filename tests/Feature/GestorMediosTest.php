@@ -48,19 +48,14 @@ class GestorMediosTest extends TestCase
 
     public function test_desde_entrada_acepta_una_ruta_de_texto_y_actualiza_el_texto_alternativo(): void
     {
-        $medio = Medio::create([
-            'disco' => 'public',
-            'ruta' => 'imagenes/eventos/demo.jpg',
-            'tipo_mime' => 'image/jpeg',
-            'tamano_bytes' => 10,
-        ]);
+        $medio = Medio::desdeRuta('imagenes/demo-cultura.svg');
 
         $request = Request::create('/eventos', 'POST', [
-            'imagen' => 'imagenes/eventos/demo.jpg',
+            'imagen' => 'imagenes/demo-cultura.svg',
             'imagen_alt' => 'Charla inaugural',
         ]);
 
-        $id = $this->gestor->desdeEntrada($request, 'imagenes/eventos/demo.jpg', 'imagenes/eventos');
+        $id = $this->gestor->desdeEntrada($request, 'imagenes/demo-cultura.svg', 'imagenes/eventos');
 
         $this->assertSame($medio->id, $id);
         $this->assertSame('Charla inaugural', $medio->fresh()->texto_alternativo);

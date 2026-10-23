@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -37,7 +38,18 @@ class StoreEventoRequest extends FormRequest
         if ($this->hasFile('imagen')) {
             $reglas['imagen'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'];
         } else {
-            $reglas['imagen'] = ['nullable', 'string', 'max:2048'];
+            $reglas['imagen'] = [
+                'bail',
+                'nullable',
+                'string',
+                'max:2048',
+                'regex:/^imagenes\/[A-Za-z0-9_\-\/]+\.(jpg|jpeg|png|webp|avif|svg)$/',
+                function (string $atributo, mixed $valor, Closure $fallo) {
+                    if (is_string($valor) && $valor !== '' && ! is_file(public_path($valor))) {
+                        $fallo('La imagen indicada no existe en el servidor.');
+                    }
+                },
+            ];
         }
 
         return $reglas;

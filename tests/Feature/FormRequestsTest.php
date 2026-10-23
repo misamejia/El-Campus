@@ -210,7 +210,7 @@ class FormRequestsTest extends TestCase
         $this->actingAs($this->administrador());
 
         $this->post(route('eventos.store'), $this->datosEvento([
-            'imagen' => '/imagenes/eventos/demo.jpg',
+            'imagen' => 'imagenes/demo-cultura.svg',
             'imagen_alt' => 'Imagen de demostracion',
         ]))->assertSessionHasNoErrors();
     }

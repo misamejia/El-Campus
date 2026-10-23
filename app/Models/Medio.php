@@ -62,15 +62,23 @@ class Medio extends Model
             return null;
         }
 
-        $archivo = public_path($ruta);
-        $tamano = is_file($archivo) ? max(1, (int) filesize($archivo)) : 1;
+        $base = realpath(public_path('imagenes'));
+        $archivo = realpath(public_path($ruta));
+
+        if ($base === false || $archivo === false || ! is_file($archivo)) {
+            return null;
+        }
+
+        if (! str_starts_with($archivo, $base.DIRECTORY_SEPARATOR)) {
+            return null;
+        }
 
         return static::firstOrCreate(
             ['disco' => 'public', 'ruta' => $ruta],
             [
                 'subido_por' => $subidoPor,
                 'tipo_mime' => static::mimeDe($ruta),
-                'tamano_bytes' => $tamano,
+                'tamano_bytes' => max(1, (int) filesize($archivo)),
             ]
         );
     }
