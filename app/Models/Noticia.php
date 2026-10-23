@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Noticia extends Model
 {
+    /**
+     * Códigos de estado visibles en el sitio público.
+     *
+     * El código del estado es la fuente de verdad; la columna es_publico de
+     * estados_noticia solo se usa como espejo para las vistas SQL.
+     *
+     * @var array<int, string>
+     */
+    public const ESTADOS_PUBLICOS = ['publicada'];
+
     protected $table = 'noticias';
 
     /**
@@ -122,11 +132,11 @@ class Noticia extends Model
     }
 
     /**
-     * Noticias visibles en el sitio público (estado con es_publico = 1).
+     * Noticias visibles en el sitio público (estado "publicada").
      */
     public function scopePublicadas(Builder $query): Builder
     {
-        return $query->whereHas('estado', fn (Builder $estado) => $estado->where('es_publico', true));
+        return $query->whereHas('estado', fn (Builder $estado) => $estado->whereIn('codigo', self::ESTADOS_PUBLICOS));
     }
 
     /**

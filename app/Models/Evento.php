@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evento extends Model
 {
+    /**
+     * Códigos de estado visibles en el sitio público.
+     *
+     * El código del estado es la fuente de verdad; la columna es_publico de
+     * estados_evento solo se usa como espejo para las vistas SQL.
+     *
+     * @var array<int, string>
+     */
+    public const ESTADOS_PUBLICOS = ['programado', 'realizado'];
+
     protected $table = 'eventos';
 
     /**
@@ -105,11 +115,11 @@ class Evento extends Model
     }
 
     /**
-     * Eventos visibles en el sitio público (estado con es_publico = 1).
+     * Eventos visibles en el sitio público (estados "programado" y "realizado").
      */
     public function scopePublicos(Builder $query): Builder
     {
-        return $query->whereHas('estado', fn (Builder $estado) => $estado->where('es_publico', true));
+        return $query->whereHas('estado', fn (Builder $estado) => $estado->whereIn('codigo', self::ESTADOS_PUBLICOS));
     }
 
     /**
