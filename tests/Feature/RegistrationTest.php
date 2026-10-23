@@ -48,7 +48,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('inicio', absolute: false));
     }
 
     public function test_el_registro_limita_los_intentos_por_ip(): void

@@ -39,7 +39,7 @@
     </div>
 
     <div class="mt-8 flex flex-wrap gap-3">
-        <x-boton href="{{ route('dashboard') }}">Ir a mi cuenta</x-boton>
+        <x-boton href="{{ auth()->user()->isLector() ? route('profile.show') : route('dashboard') }}">Ir a mi cuenta</x-boton>
         <x-boton variante="secundario" href="{{ route('profile.show') }}">Configuración del perfil</x-boton>
         <form method="POST" action="{{ route('logout') }}">
             @csrf

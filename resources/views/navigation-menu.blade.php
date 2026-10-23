@@ -1,11 +1,15 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-verde-200">
+    @php
+        $tieneAccesoPanel = Auth::user()->isAdministrador() || Auth::user()->isEditor();
+    @endphp
+
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                    <a href="{{ $tieneAccesoPanel ? route('dashboard') : route('inicio') }}" class="flex items-center gap-3">
                         <x-application-mark class="block h-9 w-auto" />
                         <span class="hidden sm:block">
                             <span class="block font-display font-black text-lg leading-none text-verde-800">El Campus</span>
@@ -16,15 +20,19 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Panel') }}
-                    </x-nav-link>
+                    @if ($tieneAccesoPanel)
+                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                            {{ __('Panel') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link href="{{ route('perfil') }}" :active="request()->routeIs('perfil')">
                         {{ __('Mi perfil') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ route('noticias.index') }}" :active="request()->routeIs('noticias.*')">
-                        {{ __('Noticias') }}
-                    </x-nav-link>
+                    @if ($tieneAccesoPanel)
+                        <x-nav-link href="{{ route('noticias.index') }}" :active="request()->routeIs('noticias.*')">
+                            {{ __('Noticias') }}
+                        </x-nav-link>
+                    @endif
                     @if (Auth::user()->isAdministrador())
                         <x-nav-link href="{{ route('autores.index') }}" :active="request()->routeIs('autores.*')">
                             {{ __('Autores') }}
@@ -36,9 +44,11 @@
                             {{ __('Usuarios') }}
                         </x-nav-link>
                     @endif
-                    <x-nav-link href="{{ route('eventos.index') }}" :active="request()->routeIs('eventos.*')">
-                        {{ __('Eventos') }}
-                    </x-nav-link>
+                    @if ($tieneAccesoPanel)
+                        <x-nav-link href="{{ route('eventos.index') }}" :active="request()->routeIs('eventos.*')">
+                            {{ __('Eventos') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link href="{{ route('inicio') }}" :active="request()->routeIs('inicio')">
                         {{ __('Ver el periódico') }}
                     </x-nav-link>
@@ -102,15 +112,19 @@
     <!-- Responsive Navigation Menu -->
     <div id="menu-movil" :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                {{ __('Panel') }}
-            </x-responsive-nav-link>
+            @if ($tieneAccesoPanel)
+                <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                    {{ __('Panel') }}
+                </x-responsive-nav-link>
+            @endif
             <x-responsive-nav-link href="{{ route('perfil') }}" :active="request()->routeIs('perfil')">
                 {{ __('Mi perfil') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('noticias.index') }}" :active="request()->routeIs('noticias.*')">
-                {{ __('Noticias') }}
-            </x-responsive-nav-link>
+            @if ($tieneAccesoPanel)
+                <x-responsive-nav-link href="{{ route('noticias.index') }}" :active="request()->routeIs('noticias.*')">
+                    {{ __('Noticias') }}
+                </x-responsive-nav-link>
+            @endif
             @if (Auth::user()->isAdministrador())
                 <x-responsive-nav-link href="{{ route('autores.index') }}" :active="request()->routeIs('autores.*')">
                     {{ __('Autores') }}
@@ -122,9 +136,11 @@
                     {{ __('Usuarios') }}
                 </x-responsive-nav-link>
             @endif
-            <x-responsive-nav-link href="{{ route('eventos.index') }}" :active="request()->routeIs('eventos.*')">
-                {{ __('Eventos') }}
-            </x-responsive-nav-link>
+            @if ($tieneAccesoPanel)
+                <x-responsive-nav-link href="{{ route('eventos.index') }}" :active="request()->routeIs('eventos.*')">
+                    {{ __('Eventos') }}
+                </x-responsive-nav-link>
+            @endif
             <x-responsive-nav-link href="{{ route('inicio') }}" :active="request()->routeIs('inicio')">
                 {{ __('Ver el periódico') }}
             </x-responsive-nav-link>

@@ -27,8 +27,11 @@
                 </p>
 
                 <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-                    <a href="{{ route('dashboard') }}" class="inline-block px-5 py-2.5 bg-verde-800 text-papel font-sans text-sm font-semibold uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-verde-700">
-                        Volver al panel
+                    @php
+                        $tieneAccesoPanel = auth()->check() && (auth()->user()->isAdministrador() || auth()->user()->isEditor());
+                    @endphp
+                    <a href="{{ $tieneAccesoPanel ? route('dashboard') : route('inicio') }}" class="inline-block px-5 py-2.5 bg-verde-800 text-papel font-sans text-sm font-semibold uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-verde-700">
+                        {{ $tieneAccesoPanel ? 'Volver al panel' : 'Volver al inicio' }}
                     </a>
                     <a href="{{ route('inicio') }}" class="inline-block px-5 py-2.5 border border-verde-800 text-verde-800 font-sans text-sm font-semibold uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-verde-50">
                         Ver el periódico

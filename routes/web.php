@@ -64,12 +64,14 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     Route::get('/perfil', [PaginaController::class, 'perfil'])->name('perfil');
 
-    // Administrador y editor: noticias y gestión administrativa de eventos.
+    // El panel (dashboard, noticias y eventos) es solo para personal con
+    // permisos de edición. Un lector autenticado y verificado conserva su
+    // perfil, pero recibe 403 en estas rutas.
     Route::middleware('role:administrador,editor')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
         Route::resource('noticias', NoticiaController::class);
 
         // El CRUD administrativo de eventos se agrupa bajo /admin para evitar

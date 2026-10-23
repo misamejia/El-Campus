@@ -4,6 +4,7 @@
     $dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     $fechaHoy = ucfirst($dias[(int) date('w')]) . ', ' . (int) date('j') . ' de ' . $meses[(int) date('n') - 1] . ' de ' . date('Y');
+    $tieneAccesoPanel = auth()->check() && (auth()->user()->isAdministrador() || auth()->user()->isEditor());
 @endphp
 
 <header class="bg-verde-800">
@@ -16,7 +17,7 @@
                 <span class="hidden sm:inline text-papel/40" aria-hidden="true">|</span>
                 @auth
                     <span class="flex items-center gap-2">
-                        <a href="{{ route('dashboard') }}" class="font-semibold text-papel hover:text-oro-400">Mi cuenta</a>
+                        <a href="{{ $tieneAccesoPanel ? route('dashboard') : route('perfil') }}" class="font-semibold text-papel hover:text-oro-400">Mi cuenta</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="hover:text-papel/70">Cerrar sesión</button>
