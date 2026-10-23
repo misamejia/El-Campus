@@ -169,18 +169,6 @@ class NoticiaController extends Controller
     }
 
     /**
-     * Noticia pública.
-     *
-     * Busca por slug y únicamente muestra noticias publicadas.
-     * Los borradores, las archivadas y los slugs inexistentes
-     * producen 404 (firstOrFail).
-     */
-    public function publica(string $slug): View
-    {
-        abort(404);
-    }
-
-    /**
      * Elimina una noticia.
      */
     public function destroy(Noticia $noticia): RedirectResponse

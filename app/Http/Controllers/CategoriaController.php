@@ -98,17 +98,4 @@ class CategoriaController extends Controller
         return redirect()->route('categorias.index')
             ->with('exito', 'Categoría eliminada correctamente.');
     }
-
-    /**
-     * Página editorial de una sección del periódico.
-     *
-     * Recibe el slug de la categoría (proveniente de una ruta estática).
-     * Solo se muestran noticias publicadas, ordenadas por fecha de
-     * publicación descendente, con eager loading de categoria, autor, estado
-     * y medio. Las categorías inactivas o inexistentes producen 404.
-     */
-    public function seccion(?string $seccion = null): View
-    {
-        abort(404);
-    }
 }

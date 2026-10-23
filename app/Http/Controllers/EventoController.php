@@ -153,30 +153,6 @@ class EventoController extends Controller
     }
 
     /**
-     * Portada pública de eventos.
-     *
-     * Solo se muestran eventos programados (los próximos primero) y realizados
-     * (los más recientes primero). Los cancelados no tienen presencia pública.
-     * Son dos colecciones ordenadas de forma "editorial": primero lo que viene.
-     */
-    public function publicas(): View
-    {
-        abort(404);
-    }
-
-    /**
-     * Evento público individual.
-     *
-     * Busca por slug y únicamente permite eventos públicamente visibles
-     * (programados o realizados). Los cancelados y los slugs inexistentes
-     * producen 404 (firstOrFail).
-     */
-    public function publico(string $slug): View
-    {
-        abort(404);
-    }
-
-    /**
      * Elimina un evento.
      */
     public function destroy(Evento $evento): RedirectResponse
