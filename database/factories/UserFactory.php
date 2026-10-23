@@ -35,7 +35,7 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'remember_token' => Str::random(10),
-            'role_id' => User::ROL_EDITOR_ID,
+            'role_id' => User::ROL_LECTOR_ID,
         ];
     }
 
@@ -51,26 +51,40 @@ class UserFactory extends Factory
 
     /**
      * Indicate that the user has the "administrador" role.
-     *
-     * "role" no es asignável masivamente en el modelo; se establece después
-     * de crear el usuario mediante forceFill, igual que en el controlador
-     * administrativo.
      */
-    public function admin(): static
+    public function administrador(): static
     {
-        return $this->afterCreating(fn (User $user) => $user->forceFill([
+        return $this->state(fn (array $attributes) => [
             'role_id' => Rol::where('codigo', User::ROLE_ADMIN)->value('id'),
-        ])->save());
+        ]);
     }
 
     /**
-     * Indicate that the user has the "editor" role (default).
+     * Alias de administrador() conservado para los tests existentes.
+     */
+    public function admin(): static
+    {
+        return $this->administrador();
+    }
+
+    /**
+     * Indicate that the user has the "editor" role.
      */
     public function editor(): static
     {
-        return $this->afterCreating(fn (User $user) => $user->forceFill([
+        return $this->state(fn (array $attributes) => [
             'role_id' => Rol::where('codigo', User::ROLE_EDITOR)->value('id'),
-        ])->save());
+        ]);
+    }
+
+    /**
+     * Indicate that the user has the "lector" role (default).
+     */
+    public function lector(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Rol::where('codigo', User::ROLE_LECTOR)->value('id'),
+        ]);
     }
 
     /**

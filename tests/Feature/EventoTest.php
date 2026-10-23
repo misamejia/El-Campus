@@ -15,7 +15,7 @@ class EventoTest extends TestCase
 
     private function usuario(bool $verificado = true): User
     {
-        return User::factory()->create([
+        return User::factory()->editor()->create([
             'email_verified_at' => $verificado ? now() : null,
         ]);
     }

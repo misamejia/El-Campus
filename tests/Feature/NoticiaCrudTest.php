@@ -37,7 +37,7 @@ class NoticiaCrudTest extends TestCase
 
     private function usuario(): User
     {
-        return User::factory()->create([
+        return User::factory()->editor()->create([
             'email_verified_at' => now(),
         ]);
     }

@@ -36,7 +36,7 @@ class AsistenteIaTest extends TestCase
 
     private function usuario(): User
     {
-        return User::factory()->create(['email_verified_at' => now()]);
+        return User::factory()->editor()->create(['email_verified_at' => now()]);
     }
 
     private function crearNoticia(array $sobreescribe = []): Noticia
