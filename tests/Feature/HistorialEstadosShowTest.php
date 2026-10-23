@@ -165,6 +165,8 @@ class HistorialEstadosShowTest extends TestCase
             ]);
         }
 
+        $this->actingAs($admin)->get(route('noticias.show', $noticia1));
+
         $consultas = 0;
         DB::listen(function () use (&$consultas) {
             $consultas++;
@@ -225,6 +227,8 @@ class HistorialEstadosShowTest extends TestCase
                 'cambiado_en' => now()->addSeconds($i),
             ]);
         }
+
+        $this->actingAs($admin)->get(route('eventos.show', $evento1));
 
         $consultas = 0;
         DB::listen(function () use (&$consultas) {
