@@ -34,9 +34,19 @@ class User extends Authenticatable implements MustVerifyEmail
     public const ROLE_EDITOR = 'editor';
 
     /**
-     * Identificador numérico del rol editor, usado como valor por defecto.
+     * Identificador (codigo) del rol lector.
+     */
+    public const ROLE_LECTOR = 'lector';
+
+    /**
+     * Identificador numérico del rol editor.
      */
     public const ROL_EDITOR_ID = 2;
+
+    /**
+     * Identificador numérico del rol lector, usado como valor por defecto.
+     */
+    public const ROL_LECTOR_ID = 3;
 
     /**
      * Roles (codigos) permitidos en el sistema.
@@ -46,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public const ROLES = [
         self::ROLE_ADMIN,
         self::ROLE_EDITOR,
+        self::ROLE_LECTOR,
     ];
 
     /**
@@ -67,12 +78,13 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Valores por defecto de los atributos para nuevas instancias.
      *
-     * El rol se establece por defecto a "editor" (igual que el valor por
-     * defecto de la columna en la base de datos) para que un usuario recién
-     * creado tenga el rol disponible en el modelo sin necesidad de recargarlo.
+     * El rol por defecto es "lector" (igual que el valor por defecto de la
+     * columna en la base de datos): una cuenta creada fuera del panel nace
+     * sin permisos de edición. Los roles editor y administrador solo se
+     * asignan desde UsuarioController.
      */
     protected $attributes = [
-        'role_id' => self::ROL_EDITOR_ID,
+        'role_id' => self::ROL_LECTOR_ID,
     ];
 
     /**
@@ -105,6 +117,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isEditor(): bool
     {
         return $this->hasRole(self::ROLE_EDITOR);
+    }
+
+    /**
+     * Indica si el usuario es lector (sin acceso al panel).
+     */
+    public function isLector(): bool
+    {
+        return $this->hasRole(self::ROLE_LECTOR);
     }
 
     /**

@@ -290,7 +290,7 @@ class RoleTest extends TestCase
         ]);
 
         $nuevo = User::where('email', 'nuevo@elampus.test')->firstOrFail();
-        $this->assertTrue($nuevo->isEditor());
+        $this->assertTrue($nuevo->isLector());
     }
 
     public function test_el_rol_no_se_puede_modificar_mediante_asignacion_masiva_no_autorizada(): void
@@ -302,7 +302,7 @@ class RoleTest extends TestCase
             'role' => User::ROLE_ADMIN,
         ]);
 
-        $this->assertTrue($usuario->refresh()->isEditor());
+        $this->assertTrue($usuario->refresh()->isLector());
     }
 
     /* ------------------------------- Regresión ------------------------------- */
