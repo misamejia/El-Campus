@@ -129,6 +129,28 @@ class RelacionadasLimiteTest extends TestCase
         $this->assertTrue($relacionada->relationLoaded('medio'));
     }
 
+    public function test_la_tarjeta_renderiza_una_relacionada_con_columnas_acotadas(): void
+    {
+        $vector = [1.0, 0.0, 0.0, 0.0];
+
+        $principal = $this->crearNoticia('Noticia principal', $this->conEmbedding($vector));
+
+        $relacionada = $this->crearNoticia('Investigacion sobre el campus', $this->conEmbedding($vector) + [
+            'resumen' => 'Resumen de la investigacion relacionada.',
+            'fecha_publicacion' => now()->subDays(3),
+        ]);
+
+        $respuesta = $this->get(route('noticia.publica', $principal->slug));
+
+        $respuesta->assertOk()
+            ->assertSee('También te puede interesar')
+            ->assertSee('Investigacion sobre el campus')
+            ->assertSee('Resumen de la investigacion relacionada.')
+            ->assertSee('Universidad')
+            ->assertSee('Redaccion El Campus')
+            ->assertSee(route('noticia.publica', $relacionada->slug));
+    }
+
     public function test_la_candidata_actual_nunca_se_incluye_aunque_sea_la_mas_similar(): void
     {
         $vector = [1.0, 0.0, 0.0, 0.0];
