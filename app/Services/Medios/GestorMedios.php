@@ -6,6 +6,7 @@ use App\Models\Medio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Gestión de las imágenes subidas desde el panel.
@@ -27,14 +28,20 @@ class GestorMedios
         $archivo = $request->file('imagen');
         $ruta = $archivo->store($carpeta, 'public');
 
-        return Medio::create([
-            'subido_por' => $request->user()?->id,
-            'disco' => 'public',
-            'ruta' => 'storage/'.$ruta,
-            'tipo_mime' => $archivo->getMimeType() ?: Medio::mimeDe($ruta),
-            'tamano_bytes' => max(1, (int) $archivo->getSize()),
-            'texto_alternativo' => $request->input('imagen_alt'),
-        ]);
+        try {
+            return Medio::create([
+                'subido_por' => $request->user()?->id,
+                'disco' => 'public',
+                'ruta' => 'storage/'.$ruta,
+                'tipo_mime' => $archivo->getMimeType() ?: Medio::mimeDe($ruta),
+                'tamano_bytes' => max(1, (int) $archivo->getSize()),
+                'texto_alternativo' => $request->input('imagen_alt'),
+            ]);
+        } catch (Throwable $e) {
+            Storage::disk('public')->delete($ruta);
+
+            throw $e;
+        }
     }
 
     /**

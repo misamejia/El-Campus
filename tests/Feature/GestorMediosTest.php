@@ -164,6 +164,27 @@ class GestorMediosTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
+    public function test_si_falla_el_registro_del_medio_se_borra_el_archivo_recien_escrito(): void
+    {
+        Medio::creating(function () {
+            throw new RuntimeException('Fallo simulado al registrar el medio.');
+        });
+
+        $request = Request::create('/noticias', 'POST', ['imagen_alt' => 'Portada del campus'], [], [
+            'imagen' => UploadedFile::fake()->create('portada.jpg', 10, 'image/jpeg'),
+        ]);
+
+        try {
+            $this->gestor->guardar($request, 'imagenes/noticias');
+            $this->fail('Se esperaba la excepción del registro del medio.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('Fallo simulado al registrar el medio.', $e->getMessage());
+        }
+
+        $this->assertDatabaseCount('medios', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
     private function medioSubido(): Medio
     {
         Storage::disk('public')->put('imagenes/noticias/demo.jpg', 'contenido');
