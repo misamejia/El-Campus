@@ -12,7 +12,7 @@ class LoginResponseComportamientoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_lector_ignora_intended_del_panel_y_va_a_inicio(): void
+    public function test_lector_con_intended_al_panel_va_a_la_portada(): void
     {
         $lector = User::factory()->lector()->create(['email_verified_at' => now()]);
 
@@ -21,6 +21,19 @@ class LoginResponseComportamientoTest extends TestCase
         $response = $this->actingAs($lector)->get(route('dashboard'));
 
         $response->assertStatus(403);
+
+        $respuesta = app(LoginResponse::class)->toResponse(
+            request()->setUserResolver(fn () => $lector)
+        );
+
+        $this->assertStringContainsString(route('inicio'), $respuesta->getTargetUrl());
+    }
+
+    public function test_lector_con_intended_a_perfil_va_a_la_portada(): void
+    {
+        $lector = User::factory()->lector()->create(['email_verified_at' => now()]);
+
+        Session::put('url.intended', route('perfil'));
 
         $respuesta = app(LoginResponse::class)->toResponse(
             request()->setUserResolver(fn () => $lector)
