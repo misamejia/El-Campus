@@ -116,3 +116,42 @@ usuario con token podría consultarlo; al habilitar tokens hay que impedir que u
 tokens y revisar qué expone la API. Al activar 2FA, probar el flujo completo con un lector.
 
 **Dónde:** `config/jetstream.php`, `config/fortify.php`, `routes/api.php`, tests omitidos.
+
+## 10. Soft deletes, `es_publico`, ancho/alto y borrado de histórico
+
+**Situación (diferido):** `noticias` y `eventos` no usan `SoftDeletes`. Los medios tienen
+columnas `ancho`/`alto` previstas pero no se usan para imponer reglas. `estados_noticia` y
+`estados_evento` usan `es_publico` para filtrar.
+
+**Razón:** los triggers `trg_noticias_ai_historial` / `trg_noticias_au_historial` /
+`trg_eventos_*` crean filas en `historial_estados_noticia`/`historial_estados_evento` para
+**toda** noticia/evento. Un `FOREIGN KEY` con `ON DELETE RESTRICT` en esas tablas de
+historial **NO sirve** para impedir el borrado físico: el propio trigger de INSERT ya
+genera el historial al crear el registro, por lo que intentar borrar quedaría bloqueado o
+sería inviable. Además, si se usa `SoftDeletes` con `slug` único, el slug seguiría
+retenido y dificultaría reutilizarlo. Por ello estas mejoras se dejan **diferidas** hasta
+definir la política de archivo/borrado explícitamente.
+
+**Acción propuesta (futura):** si se necesita archivo, valorar `SoftDeletes` sin índice
+único estricto sobre slug en vigentes, o mover a otra tabla; revisar FKs del historial
+antes de habilitarlo.
+
+## 11. Vistas SQL y FULLTEXT
+
+**Situación:** la migración MySQL crea 5 vistas (`v_noticias_publicas`,
+`v_eventos_publicos`, `v_dashboard_resumen`, `v_noticias_por_estado`,
+`v_eventos_por_estado`) y 2 índices `FULLTEXT` (`ft_noticias_busqueda`,
+`ft_eventos_busqueda`). **Hoy no se usan** en el código de aplicación: el buscador usa
+`LIKE` parametrizado (`BusquedaController`) y los listados/dashboard usan Eloquent.
+
+**Destino:** depende del **enunciado de la materia**. No se borran en esta auditoría.
+Conservadas para evaluación/documentación.
+
+## 12. Ruta `/api/user`
+
+**Situación:** `routes/api.php` expone `GET /user` con `auth:sanctum`. **Nada lo usa** en
+el código. Cualquier usuario con sesión válida (incluido un **lector**) puede abrirla si
+hay token/sesión en ese contexto. `Features::api()` está comentado en
+`config/jetstream.php`.
+
+**Decisión:** pendiente del dueño. No se elimina ni se restringe por rol en esta auditoría.
