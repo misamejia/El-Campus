@@ -17,7 +17,7 @@ abstract class TestCase extends BaseTestCase
     protected $dropViews = true;
 
     /**
-     * Impide que la suite MySQL se ejecute sobre una base que no sea de pruebas.
+     * Impide que la suite MySQL/MariaDB se ejecute sobre una base que no sea de pruebas.
      */
     protected function setUpTraits()
     {
@@ -37,10 +37,11 @@ abstract class TestCase extends BaseTestCase
     public static function validarBaseDeDatosDePrueba(string $driver, ?string $base): void
     {
         $base = trim((string) $base);
+        $driver = strtolower($driver);
 
-        if ($driver === 'mysql' && ! str_ends_with($base, '_test')) {
+        if (in_array($driver, ['mysql', 'mariadb'], true) && ! str_ends_with($base, '_test')) {
             throw new RuntimeException(
-                "La suite MySQL solo puede ejecutarse sobre una base terminada en _test; base configurada: '{$base}'."
+                "La suite MySQL/MariaDB solo puede ejecutarse sobre una base terminada en _test; base configurada: '{$base}'."
             );
         }
     }
