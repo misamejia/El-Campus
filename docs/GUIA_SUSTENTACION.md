@@ -147,6 +147,63 @@ Resultado real de la suite completa (`php artisan test`) en la auditoría final:
 
 Complementan la verificación las comprobaciones HTTP reales (todas 200/302/404 esperados) y el `npm run build`/`php artisan view:cache` sin errores.
 
+## 16. Objetos de base de datos
+
+Esta sección explica qué objetos existen en MySQL/MariaDB, qué hacen, por qué existen y dónde están definidos. **Solo se aplican cuando el driver es `mysql`** (la migración `database/migrations/2026_09_12_235000_create_triggers_and_views.php` los omite en otros motores).
+
+### Triggers
+
+| Trigger | Tabla | Momento | ¿Qué hace? | ¿Se usa hoy? | Archivo |
+|---|---|---|---|---|---|
+| `trg_noticias_bi_fecha_publicacion` | `noticias` | BEFORE INSERT | Si se inserta una noticia con `estado_id` = `publicada` y `fecha_publicacion` es `NULL`, asigna `NOW()`. | Sí. Garantiza que toda noticia publicada tenga fecha de publicación sin depender solo del controlador. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_noticias_bu_fecha_publicacion` | `noticias` | BEFORE UPDATE | Igual que el anterior, pero al pasar a publicada sin fecha. | Sí. Cubre el cambio de estado desde el panel. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_noticias_ai_historial` | `noticias` | AFTER INSERT | Inserta en `historial_estados_noticia` un registro con `estado_anterior_id = NULL`, `estado_nuevo_id = NEW.estado_id`, `usuario_id = NEW.creado_por`. | Sí. Genera el historial inicial visible en `noticias.show`. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_noticias_au_historial` | `noticias` | AFTER UPDATE | Si `OLD.estado_id <> NEW.estado_id`, inserta en `historial_estados_noticia` con `estado_anterior_id`, `estado_nuevo_id` y `usuario_id = NEW.actualizado_por`. | Sí. Registra cada cambio de estado. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_eventos_ai_historial` | `eventos` | AFTER INSERT | Igual que noticias, pero en `historial_estados_evento`. Usa `NEW.creado_por`. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_eventos_au_historial` | `eventos` | AFTER UPDATE | Igual que noticias, registra cambios de estado con `NEW.actualizado_por`. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_users_bu_ultimo_admin` | `users` | BEFORE UPDATE | Si se intenta quitar el rol de administrador al único administrador, lanza `SIGNAL SQLSTATE '45000'`. | Sí. Protección a nivel BD (complementa las reglas de aplicación). | `2026_09_12_235000_create_triggers_and_views.php` |
+| `trg_users_bd_ultimo_admin` | `users` | BEFORE DELETE | Impide eliminar al único administrador del sistema. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+
+### Restricciones CHECK
+
+| Tabla | Constraint | Condición | ¿Para qué? | ¿Se usa hoy? | Archivo |
+|---|---|---|---|---|---|
+| `roles` | `ck_roles_codigo` | `codigo REGEXP '^[a-z_]+'` | Solo códigos minúsculos/guion bajo. | Sí (validación en BD). | `2026_09_12_235000_create_triggers_and_views.php` |
+| `estados_noticia` | `ck_estados_noticia_codigo` | `codigo REGEXP '^[a-z_]+'` | Idem. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `estados_evento` | `ck_estados_evento_codigo` | `codigo REGEXP '^[a-z_]+'` | Idem. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `categorias` | `ck_categorias_slug` | `slug REGEXP '^[a-z0-9]+(-[a-z0-9]+)*$'` | Slugs válidos. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `autores` | `ck_autores_slug` | `slug REGEXP '^[a-z0-9]+(-[a-z0-9]+)*$'` | Slugs válidos. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `autores` | `ck_autores_email` | `email IS NULL OR email LIKE '%_@_%._%'` | Email básico si existe. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `users` | `ck_users_email` | `email LIKE '%_@_%._%'` | Email obligatorio con formato. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `medios` | `ck_medios_mime` | `tipo_mime IN ('image/jpeg','image/png','image/webp','image/avif','image/svg+xml')` | Solo tipos permitidos. | Sí (complementa validación). | `2026_09_12_235000_create_triggers_and_views.php` |
+| `medios` | `ck_medios_peso` | `tamano_bytes BETWEEN 1 AND 2097152` | Límite 2MB. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `noticias` | `ck_noticias_slug` | `slug REGEXP '^[a-z0-9]+(-[a-z0-9]+)*$'` | Slugs válidos. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `noticias` | `ck_noticias_titulo` | `CHAR_LENGTH(TRIM(titulo)) > 0` | Título no vacío. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `eventos` | `ck_eventos_slug` | `slug REGEXP '^[a-z0-9]+(-[a-z0-9]+)*$'` | Slugs válidos. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `eventos` | `ck_eventos_titulo` | `CHAR_LENGTH(TRIM(titulo)) > 0` | Título no vacío. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `eventos` | `ck_eventos_fechas` | `fecha_fin IS NULL OR fecha_fin >= fecha_inicio` | Coherencia temporal. | Sí. | `2026_09_12_235000_create_triggers_and_views.php` |
+
+### Vistas
+
+| Vista | ¿Qué hace? | ¿Por qué existe? | ¿Se usa hoy en el código? | Archivo |
+|---|---|---|---|---|
+| `v_noticias_publicas` | Une `noticias` con `estados_noticia` (solo `es_publico=1`), `categorias` (solo `activa=1`), `autores`, `medios`. | Agregar una vista para consultas públicas. | **No.** El código usa Eloquent directamente (`NoticiaPublicController`, `PortadaPublicaTest`, etc.). | `2026_09_12_235000_create_triggers_and_views.php` |
+| `v_eventos_publicos` | Filtra eventos con estado público, une `organizadores` y `medios`. | Agregar una vista para consultas públicas. | **No.** El código usa Eloquent directamente. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `v_dashboard_resumen` | Conteos globales de noticias, eventos, autores, categorías, usuarios. | Vista de apoyo para dashboard. | **No.** `DashboardController` calcula con consultas/contadores propios. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `v_noticias_por_estado` | Agrupa noticias por estado con totales. | Vista de apoyo. | **No.** No hay uso en código. | `2026_09_12_235000_create_triggers_and_views.php` |
+| `v_eventos_por_estado` | Agrupa eventos por estado con totales. | Vista de apoyo. | **No.** No hay uso en código. | `2026_09_12_235000_create_triggers_and_views.php` |
+
+**Razón de conservarlas:** Fueron creadas en la migración MySQL; no se eliminan sin decisión explícita. No afectan las pruebas (SQLite no las usa) y no rompen el funcionamiento.
+
+### Índices FULLTEXT
+
+| Índice | Tabla | Columnas | ¿Para qué? | ¿Se usa hoy en el código? | Archivo |
+|---|---|---|---|---|---|
+| `ft_noticias_busqueda` | `noticias` | `titulo`, `resumen`, `contenido` | Búsqueda textual con `MATCH ... AGAINST`. | **No.** `BusquedaController` usa `LIKE` con `ESCAPE '\'` (parametrizado). | `2026_09_12_235000_create_triggers_and_views.php` |
+| `ft_eventos_busqueda` | `eventos` | `titulo`, `descripcion`, `lugar` | Búsqueda textual. | **No.** `BusquedaController` usa `LIKE` parametrizado. | `2026_09_12_235000_create_triggers_and_views.php` |
+
+**Razón de conservarlos:** Están definidos pero no utilizados actualmente. No se eliminan sin decisión explícita del usuario.
+
 ## 16. Base de datos
 
 Estado real verificado (solo lectura) al finalizar la auditoría:
