@@ -13,7 +13,7 @@
         @endsession
 
         <h1 class="font-display text-2xl font-bold text-verde-800 text-center">Iniciar sesión</h1>
-        <p class="mt-1 text-center text-sm text-neutral-500">Accede a tu cuenta de El Campus</p>
+        <p class="mt-1 text-center text-sm text-neutral-600">Accede a tu cuenta de El Campus</p>
 
         <form method="POST" action="{{ route('login') }}" class="mt-6">
             @csrf

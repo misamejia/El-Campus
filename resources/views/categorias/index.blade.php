@@ -24,7 +24,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-neutral-200">
                         <thead class="bg-papel">
-                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-500">
+                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-600">
                                 <th class="px-4 py-3 text-start">Nombre</th>
                                 <th class="px-4 py-3 text-start">Descripción</th>
                                 <th class="px-4 py-3 text-start">Estado</th>
@@ -54,7 +54,7 @@
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-3 text-sm">
                                             <a href="{{ route('categorias.show', $categoriaItem) }}" class="font-semibold text-verde-700 hover:text-verde-500">Ver</a>
-                                            <a href="{{ route('categorias.edit', $categoriaItem) }}" class="font-semibold text-oro-700 hover:text-oro-500">Editar</a>
+                                            <a href="{{ route('categorias.edit', $categoriaItem) }}" class="font-semibold text-oro-900 hover:text-oro-700">
                                             <form method="POST" action="{{ route('categorias.destroy', $categoriaItem) }}" onsubmit="return confirm('¿Eliminar esta categoría?');">
                                                 @csrf
                                                 @method('DELETE')
@@ -65,7 +65,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-10 text-center font-sans text-sm text-neutral-500">
+                                    <td colspan="5" class="px-4 py-10 text-center font-sans text-sm text-neutral-600">
                                         No hay categorías registradas todavía.
                                     </td>
                                 </tr>
@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            <p class="mt-6 text-sm text-neutral-500">
+                <p class="mt-6 text-sm text-neutral-600">
                 Se muestran {{ $categorias->count() }} categoría(s).
             </p>
         </div>

@@ -20,7 +20,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-neutral-200">
                         <thead class="bg-papel">
-                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-500">
+                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-600">
                                 <th class="px-4 py-3 text-start">Título</th>
                                 <th class="px-4 py-3 text-start">Lugar</th>
                                 <th class="px-4 py-3 text-start">Fecha de inicio</th>
@@ -56,7 +56,7 @@
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-3 text-sm">
                                             <a href="{{ route('eventos.show', $evento) }}" class="font-semibold text-verde-700 hover:text-verde-500">Ver</a>
-                                            <a href="{{ route('eventos.edit', $evento) }}" class="font-semibold text-oro-700 hover:text-oro-500">Editar</a>
+                                            <a href="{{ route('eventos.edit', $evento) }}" class="font-semibold text-oro-900 hover:text-oro-700">
                                             <form method="POST" action="{{ route('eventos.destroy', $evento) }}" onsubmit="return confirm('¿Eliminar este evento? Esta acción no se puede deshacer.');">
                                                 @csrf
                                                 @method('DELETE')
@@ -67,7 +67,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-10 text-center font-sans text-sm text-neutral-500">
+                                    <td colspan="6" class="px-4 py-10 text-center font-sans text-sm text-neutral-600">
                                         No hay eventos registrados todavía.
                                     </td>
                                 </tr>
@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <p class="mt-6 text-sm text-neutral-500">
+                <p class="mt-6 text-sm text-neutral-600">
                 Se muestran {{ $eventos->count() }} evento(s).
             </p>
 

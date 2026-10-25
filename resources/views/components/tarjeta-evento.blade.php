@@ -44,7 +44,7 @@
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <x-etiqueta :color="$etiquetaEstado['color']">{{ $etiquetaEstado['texto'] }}</x-etiqueta>
                 @if ($fecha)
-                    <span class="font-sans text-xs uppercase tracking-wider text-neutral-500">{{ $fecha }}</span>
+                    <span class="font-sans text-xs uppercase tracking-wider text-neutral-600">{{ $fecha }}</span>
                 @endif
             </div>
 
