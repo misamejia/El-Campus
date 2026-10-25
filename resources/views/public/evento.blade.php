@@ -28,12 +28,16 @@
             <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-600">Fecha</dt>
             <dd class="flex flex-1 items-center gap-2 text-neutral-700">
                 <span>{{ $evento->fecha_inicio->format('d/m/Y') }}</span>
-                @if ($evento->fecha_inicio->format('H:i') !== '00:00')
-                    <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }} a {{ $evento->fecha_fin->isoFormat('h:mm a') }}</span>
+                @if ($evento->fecha_inicio && $evento->fecha_inicio->format('H:i') !== '00:00')
+                    @if ($evento->fecha_fin)
+                        <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }} a {{ $evento->fecha_fin->isoFormat('h:mm a') }}</span>
+                    @else
+                        <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
+                    @endif
                 @elseif ($evento->fecha_fin && $evento->fecha_fin->format('H:i') !== '00:00')
-                    <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
+                    <span class="text-neutral-600">· {{ $evento->fecha_inicio?->isoFormat('h:mm a') }}</span>
                     <br><span class="text-neutral-600">hasta el {{ $evento->fecha_fin->isoFormat('D [de] MMMM [de] YYYY, h:mm a') }}</span>
-                @else
+                @elseif ($evento->fecha_inicio)
                     <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
                 @endif
             </dd>
