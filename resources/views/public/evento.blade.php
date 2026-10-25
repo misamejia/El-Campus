@@ -14,7 +14,7 @@
                 };
             @endphp
             <x-etiqueta :color="$etiquetaEstado['color']">{{ $etiquetaEstado['texto'] }}</x-etiqueta>
-            <span class="font-sans text-xs uppercase tracking-wider text-neutral-600">
+            <span class="font-sans text-xs uppercase tracking-wider text-neutral-500">
                 {{ $evento->fecha_inicio?->isoFormat('D [de] MMMM [de] YYYY, h:mm a') }}
             </span>
         </div>
@@ -25,30 +25,26 @@
 
         <dl class="mt-6 grid gap-x-8 gap-y-3 border-y border-neutral-200 py-5 font-sans text-sm text-neutral-700 sm:grid-cols-2">
             <div class="flex items-start gap-2">
-            <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-600">Fecha</dt>
-            <dd class="flex flex-1 items-center gap-2 text-neutral-700">
-                <span>{{ $evento->fecha_inicio->format('d/m/Y') }}</span>
-                @if ($evento->fecha_inicio && $evento->fecha_inicio->format('H:i') !== '00:00')
-                    @if ($evento->fecha_fin)
-                        <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }} a {{ $evento->fecha_fin->isoFormat('h:mm a') }}</span>
+                <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-500">Fecha</dt>
+                <dd>
+                    {{ $evento->fecha_inicio->isoFormat('D [de] MMMM [de] YYYY') }}
+                    @if ($evento->fecha_fin && $evento->fecha_fin->isSameDay($evento->fecha_inicio))
+                        <span class="text-neutral-500">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }} a {{ $evento->fecha_fin->isoFormat('h:mm a') }}</span>
+                    @elseif ($evento->fecha_fin)
+                        <span class="text-neutral-500">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
+                        <br><span class="text-neutral-500">hasta el {{ $evento->fecha_fin->isoFormat('D [de] MMMM [de] YYYY, h:mm a') }}</span>
                     @else
-                        <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
+                        <span class="text-neutral-500">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
                     @endif
-                @elseif ($evento->fecha_fin && $evento->fecha_fin->format('H:i') !== '00:00')
-                    <span class="text-neutral-600">· {{ $evento->fecha_inicio?->isoFormat('h:mm a') }}</span>
-                    <br><span class="text-neutral-600">hasta el {{ $evento->fecha_fin->isoFormat('D [de] MMMM [de] YYYY, h:mm a') }}</span>
-                @elseif ($evento->fecha_inicio)
-                    <span class="text-neutral-600">· {{ $evento->fecha_inicio->isoFormat('h:mm a') }}</span>
-                @endif
-            </dd>
+                </dd>
             </div>
             <div class="flex items-start gap-2">
-                <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-600">Lugar</dt>
+                <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-500">Lugar</dt>
                 <dd>{{ $evento->lugar }}</dd>
             </div>
             @if ($evento->organizador)
                 <div class="flex items-start gap-2">
-                    <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-600">Organiza</dt>
+                    <dt class="w-24 shrink-0 font-semibold uppercase tracking-wider text-neutral-500">Organiza</dt>
                     <dd>{{ $evento->organizador->nombre }}</dd>
                 </div>
             @endif

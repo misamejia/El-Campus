@@ -5,9 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ __('Acceso no autorizado') }} — {{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=playfair-display:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=source-serif-4:400,600,700&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -15,12 +15,12 @@
         <div class="min-h-screen flex items-center justify-center px-6 py-12">
             <div class="w-full max-w-lg text-center">
                 <a href="{{ route('inicio') }}" class="group mb-8 text-center no-underline block">
-                    <span class="block text-[10px] uppercase tracking-[0.35em] text-oro-900 font-sans font-semibold">Universidad de Córdoba</span>
+                    <span class="block text-[10px] uppercase tracking-[0.35em] text-oro-700 font-sans font-semibold">Universidad de Córdoba</span>
                     <span class="block font-display text-4xl font-black text-verde-800">El Campus</span>
-                    <span class="block text-xs uppercase tracking-[0.3em] text-neutral-600 font-sans mt-1">Periódico Universitario</span>
+                    <span class="block text-xs uppercase tracking-[0.3em] text-neutral-500 font-sans mt-1">Periódico Universitario</span>
                 </a>
 
-                <p class="font-sans text-xs uppercase tracking-[0.3em] text-oro-900 font-semibold">Error 403</p>
+                <p class="font-sans text-xs uppercase tracking-[0.3em] text-oro-700 font-semibold">Error 403</p>
                 <h1 class="mt-2 font-display text-4xl font-black text-verde-800">Acceso no autorizado</h1>
                 <p class="mt-4 font-sans text-sm leading-relaxed text-neutral-600">
                     No tienes permisos para acceder a esta sección.

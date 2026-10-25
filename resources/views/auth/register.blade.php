@@ -7,7 +7,7 @@
         <x-validation-errors class="mb-4" />
 
         <h1 class="font-display text-2xl font-bold text-verde-800 text-center">Crear una cuenta</h1>
-        <p class="mt-1 text-center text-sm text-neutral-600">Regístrate en El Campus</p>
+        <p class="mt-1 text-center text-sm text-neutral-500">Regístrate en El Campus</p>
 
         <form method="POST" action="{{ route('register') }}" class="mt-6">
             @csrf

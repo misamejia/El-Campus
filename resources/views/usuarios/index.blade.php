@@ -4,7 +4,7 @@
             <h2 class="font-display text-2xl font-bold text-neutral-900 leading-tight">
                 {{ __('Gestión de usuarios') }}
             </h2>
-                <p class="mt-1 font-sans text-sm text-neutral-600">
+            <p class="mt-1 font-sans text-sm text-neutral-500">
                 {{ __('Administra el rol de cada usuario del sistema.') }}
             </p>
         </div>
@@ -24,7 +24,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-neutral-200">
                         <thead class="bg-papel">
-                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-600">
+                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-500">
                                 <th class="px-4 py-3 text-start">Nombre</th>
                                 <th class="px-4 py-3 text-start">Correo</th>
                                 <th class="px-4 py-3 text-start">Verificación</th>
@@ -63,7 +63,7 @@
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-3 text-sm">
                                             @if ($usuario->is(Auth::user()))
-                                                <span class="font-sans text-xs text-neutral-600">No puedes cambiar tu propio rol</span>
+                                                <span class="font-sans text-xs text-neutral-400">No puedes cambiar tu propio rol</span>
                                             @elseif ($usuario->isAdministrador() && $totalAdministradores === 1)
                                                 <span class="font-sans text-xs text-neutral-400">Último administrador</span>
                                             @else
@@ -84,7 +84,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-10 text-center font-sans text-sm text-neutral-600">
+                                    <td colspan="5" class="px-4 py-10 text-center font-sans text-sm text-neutral-500">
                                         No hay usuarios registrados todavía.
                                     </td>
                                 </tr>
@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-                <p class="mt-6 text-sm text-neutral-600">
+            <p class="mt-6 text-sm text-neutral-500">
                 Se muestran {{ $usuarios->count() }} usuario(s).
             </p>
 

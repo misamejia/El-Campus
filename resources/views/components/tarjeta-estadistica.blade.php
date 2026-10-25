@@ -19,7 +19,7 @@
     <div>
         <p class="font-sans text-xs font-semibold uppercase tracking-widest text-neutral-500">{{ $titulo }}</p>
         @if ($descripcion)
-                <p class="mt-1 text-sm text-neutral-600">{{ $descripcion }}</p>
+            <p class="mt-1 text-sm text-neutral-400">{{ $descripcion }}</p>
         @endif
         <p class="sr-only">Total de {{ $titulo }}: {{ $valor }}</p>
     </div>

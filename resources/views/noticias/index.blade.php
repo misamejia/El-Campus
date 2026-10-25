@@ -20,7 +20,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-neutral-200">
                         <thead class="bg-papel">
-                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-600">
+                            <tr class="font-sans text-xs uppercase tracking-widest text-neutral-500">
                                 <th class="px-4 py-3 text-start">Título</th>
                                 <th class="px-4 py-3 text-start">Categoría</th>
                                 <th class="px-4 py-3 text-start">Autor</th>
@@ -55,7 +55,7 @@
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-3 text-sm">
                                             <a href="{{ route('noticias.show', $noticia) }}" class="font-semibold text-verde-700 hover:text-verde-500">Ver</a>
-                                            <a href="{{ route('noticias.edit', $noticia) }}" class="font-semibold text-oro-900 hover:text-oro-700">
+                                            <a href="{{ route('noticias.edit', $noticia) }}" class="font-semibold text-oro-700 hover:text-oro-500">Editar</a>
                                             <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" onsubmit="return confirm('¿Eliminar esta noticia? Esta acción no se puede deshacer.');">
                                                 @csrf
                                                 @method('DELETE')
@@ -66,7 +66,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-4 py-10 text-center font-sans text-sm text-neutral-600">
+                                    <td colspan="7" class="px-4 py-10 text-center font-sans text-sm text-neutral-500">
                                         No hay noticias registradas todavía.
                                     </td>
                                 </tr>
@@ -76,7 +76,7 @@
                 </div>
             </div>
 
-                <p class="mt-6 text-sm text-neutral-600">
+            <p class="mt-6 text-sm text-neutral-500">
                 Se muestran {{ $noticias->count() }} noticia(s).
             </p>
 
