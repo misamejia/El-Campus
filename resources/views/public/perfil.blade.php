@@ -7,7 +7,7 @@
 @section('contenido')
     @php $seccion = 'Mi cuenta'; @endphp
 
-    <p class="font-sans text-xs uppercase tracking-[0.3em] text-oro-700 font-semibold">Zona protegida de prueba</p>
+    <p class="font-sans text-xs uppercase tracking-[0.3em] text-oro-900 font-semibold">Zona protegida de prueba</p>
 
     <h1 class="mt-2 font-display text-3xl font-black text-verde-950 md:text-4xl">
         Mi perfil
@@ -17,22 +17,22 @@
 
     <div class="mt-10 grid gap-8 md:grid-cols-3">
         <div class="rounded-lg border border-neutral-200 bg-marfil p-6">
-            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Usuario</h2>
+            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-600">Usuario</h2>
             <p class="mt-3 font-display text-2xl font-bold text-verde-800">{{ auth()->user()->name }}</p>
         </div>
 
         <div class="rounded-lg border border-neutral-200 bg-marfil p-6">
-            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Correo electrónico</h2>
+            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-600">Correo electrónico</h2>
             <p class="mt-3 font-display text-2xl font-bold break-all text-verde-800">{{ auth()->user()->email }}</p>
         </div>
 
         <div class="rounded-lg border border-neutral-200 bg-marfil p-6">
-            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Verificación</h2>
+            <h2 class="font-sans text-xs font-bold uppercase tracking-[0.2em] text-neutral-600">Verificación</h2>
             <p class="mt-3 font-display text-2xl font-bold">
                 @if (auth()->user()->hasVerifiedEmail())
                     <span class="text-verde-700">Verificado</span>
                 @else
-                    <span class="text-oro-700">Pendiente</span>
+                    <span class="text-oro-900">Pendiente</span>
                 @endif
             </p>
         </div>

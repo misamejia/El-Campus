@@ -9,7 +9,7 @@
             @if ($noticia->categoria)
                 <x-etiqueta color="oro">{{ $noticia->categoria->nombre }}</x-etiqueta>
             @endif
-            <span class="font-sans text-xs uppercase tracking-wider text-neutral-500">
+            <span class="font-sans text-xs uppercase tracking-wider text-neutral-600">
                 {{ $noticia->fecha_publicacion?->isoFormat('D [de] MMMM [de] YYYY') ?: 'Sin fecha de publicación' }}
             </span>
         </div>
@@ -61,7 +61,7 @@
             </div>
 
             <p id="estado-lectura" role="status" aria-live="polite" class="sr-only"></p>
-            <p id="lectura-no-soportada" class="hidden w-full font-sans text-xs text-neutral-500"></p>
+            <p id="lectura-no-soportada" class="hidden w-full font-sans text-xs text-neutral-600"></p>
         </div>
 
         @if ($noticia->imagen)
