@@ -15,6 +15,8 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                serif: ['"Source Serif 4"', ...defaultTheme.fontFamily.serif],
+                display: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
             },
             colors: {
                 papel: '#F4F0DF',
